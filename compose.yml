@@ -1,0 +1,29 @@
+services:
+  gpu:
+    build:
+      context: .
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: co5085-dl:gpu
+    volumes:
+      - .:/workspace
+    devices:
+      - nvidia.com/gpu=all
+    ports:
+      - "4000:4000"
+    stdin_open: true
+    tty: true
+  cpu:
+    build:
+      context: .
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: co5085-dl:cpu
+    volumes:
+      - .:/workspace
+    ports:
+      - "4001:4000"
+    stdin_open: true
+    tty: true
