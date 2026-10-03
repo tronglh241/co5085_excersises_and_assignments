@@ -1,0 +1,13 @@
+--extra-index-url https://download.pytorch.org/whl/cu126
+
+torch==2.7.1
+torchvision==0.22.1
+scikit-learn==1.9.1
+matplotlib==3.11.2
+tensorboard==2.21.0
+
+flake8==7.4.1
+isort==9.0.2
+
+-e ./third_party/flame
+-e ./third_party/ignite

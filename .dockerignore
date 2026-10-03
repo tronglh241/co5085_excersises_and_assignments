@@ -1,0 +1,4 @@
+*
+!requirements.txt
+!third_party/
+third_party/*/.git/

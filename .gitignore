@@ -216,3 +216,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Jekyll (docs/ site)
+docs/_site/
+docs/.jekyll-cache/
+docs/.jekyll-metadata
+docs/.sass-cache/
+
+# Experiment outputs (datasets, checkpoints, logs)
+data/
+checkpoints/
+logs/
