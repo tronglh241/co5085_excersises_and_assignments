@@ -231,6 +231,7 @@ docs/.sass-cache/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+*.minted
 
 # Experiment outputs (datasets, checkpoints, logs)
 data/

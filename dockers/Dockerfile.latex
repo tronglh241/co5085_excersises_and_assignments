@@ -4,12 +4,22 @@ ARG UID=1000
 ARG GID=1000
 ARG UNAME=dev
 
-RUN if ! getent passwd ${UID} >/dev/null; then \
-      groupadd -g ${GID} ${UNAME} || true; \
-      useradd -m -u ${UID} -g ${GID} -s /bin/bash ${UNAME}; \
+RUN EXISTING=$(getent passwd ${UID} | cut -d: -f1 || true); \
+    if [ -n "$EXISTING" ] && [ "$EXISTING" != "${UNAME}" ]; then \
+        usermod -l ${UNAME} -d /home/${UNAME} -m "$EXISTING"; \
+        groupmod -n ${UNAME} $(getent group ${GID} | cut -d: -f1) || true; \
+    elif [ -z "$EXISTING" ]; then \
+        groupadd -g ${GID} ${UNAME} || true; \
+        useradd -m -u ${UID} -g ${GID} -s /bin/bash ${UNAME}; \
     fi
 
-ENV HOME=/tmp
+RUN tlmgr update --self && tlmgr install minted
+
+RUN apt update && apt install -y --no-install-recommends python3-pip \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --break-system-packages --no-cache-dir latexminted
+
+ENV HOME=/home/${UNAME}
 USER ${UID}
 
 WORKDIR /workspace
