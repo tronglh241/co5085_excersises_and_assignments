@@ -3,6 +3,7 @@ services:
     container_name: co5085-dl-gpu
     build:
       context: .
+      dockerfile: dockers/Dockerfile
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
@@ -26,6 +27,7 @@ services:
     container_name: co5085-dl-cpu
     build:
       context: .
+      dockerfile: dockers/Dockerfile
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
@@ -36,5 +38,19 @@ services:
     ports:
       - 4000:4000
       - 6006:6006
+    stdin_open: true
+    tty: true
+  latex:
+    container_name: co5085-latex
+    build:
+      context: .
+      dockerfile: dockers/Dockerfile.latex
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    image: co5085-latex
+    pull_policy: build
+    volumes:
+      - .:/workspace
     stdin_open: true
     tty: true

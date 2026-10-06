@@ -32,7 +32,6 @@ USER ${UNAME}
 RUN gem install jekyll bundler
 
 COPY --chown=${UID}:${GID} requirements.txt requirements.txt
-COPY --chown=${UID}:${GID} third_party/ third_party/
 RUN pip install -r requirements.txt
 
 CMD ["bash"]

@@ -1,0 +1,131 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{fontspec}
+\usepackage[vietnamese,provide=*]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{minted}
+\usepackage[hidelinks]{hyperref}
+
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
+\graphicspath{{../docs/assets/e1/}}
+
+\title{Báo cáo bài tập E1--E3}
+\author{TODO: tên thành viên}
+\date{HK261}
+
+\begin{document}
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+
+\section{Giới thiệu chung}
+Phần này mô tả chung cho cả E1--E3: tập dữ liệu, split, seed và quy trình
+huấn luyện dùng chung (xem Hình~\ref{fig:mau} và Bảng~\ref{tab:split}).
+
+\subsection{Tập dữ liệu chung}
+Mô tả nguồn ảnh, kích thước, số lớp và split train/val/test dùng chung cho E1--E3.
+
+\subsection{Khảo sát dữ liệu}
+Các biểu đồ đếm mẫu, tỉ lệ split, lưới ảnh mẫu và cân bằng lớp.
+
+\begin{figure}[h]
+\centering
+\includegraphics[height=0.75\textheight,keepaspectratio]{samples.png}
+\caption{Lưới ảnh mẫu theo từng chữ số.}
+\label{fig:mau}
+\end{figure}
+
+\subsection{Tiền xử lý}
+Chuẩn hóa (mean/std đo trên train) và lý do.
+
+\begin{table}[h]
+\centering
+\caption{Số mẫu mỗi split.}
+\label{tab:split}
+\begin{tabular}{lrr}
+\toprule
+Tập & Số mẫu & Tỉ lệ \\
+\midrule
+Train & 50000 & 83.3\% \\
+Val & 10000 & 16.7\% \\
+Test & 10000 & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Quy trình huấn luyện chung}
+Loss, optimizer và schedule, augmentation, chọn checkpoint, metric và tái lập.
+
+\section{E1 -- Phân loại ảnh: softmax, MLP, CNN}
+
+\subsection{Mục tiêu}
+So sánh ba bộ phân loại theo accuracy / capacity / trường hợp sai.
+
+\subsection{Mô hình}
+Softmax, MLP, CNN và bảng so sánh số tham số.
+
+\subsection{Huấn luyện}
+Điểm khác với quy trình chung và siêu tham số riêng từng mô hình.
+
+\begin{figure}[h]
+\centering
+\begin{minted}[linenos,frame=lines,framesep=2mm]{python}
+for epoch in range(epochs):
+    for x, y in train_loader:
+        x, y = x.to(device), y.to(device)
+        loss = criterion(model(x), y)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+\end{minted}
+\caption{Vòng lặp huấn luyện tự viết (mẫu kiểm tra định dạng).}
+\label{fig:loop}
+\end{figure}
+
+\subsection{Kết quả}
+Accuracy, capacity, trường hợp sai và bảng tổng hợp so sánh.
+
+\subsection{Kết luận}
+Nhận xét ngắn cho E1.
+
+\section{E2 -- Transformer: MSA và tokenization}
+
+\subsection{Mục tiêu}
+MSA tự viết vs.\ PyTorch; $\geq$2 cách lấy token trên cùng tập ảnh E1.
+
+\subsection{Mô hình}
+Hai bản MSA, encoder nông + head, các cách tokenize (patch, pixel/hàng, CNN-stem).
+
+\subsection{Huấn luyện}
+Điểm khác với quy trình chung.
+
+\subsection{Kết quả}
+Đúng đắn và accuracy, capacity và thời gian theo độ dài chuỗi, nhận xét định tính.
+
+\subsection{Kết luận}
+Nhận xét ngắn cho E2.
+
+\section{E3 -- LSTM / GRU trên chuỗi ảnh}
+
+\subsection{Mục tiêu}
+Biểu diễn ảnh thành chuỗi; LSTM vs.\ GRU; so với baseline MLP/CNN của E1.
+
+\subsection{Mô hình}
+Cách đưa ảnh thành chuỗi, LSTM/GRU, baseline MLP-CNN dùng lại từ E1.
+
+\subsection{Huấn luyện}
+Điểm khác với quy trình chung.
+
+\subsection{Kết quả}
+Accuracy, capacity và thời gian, so sánh biểu diễn chuỗi và baseline.
+
+\subsection{Kết luận}
+Nhận xét ngắn cho E3.
+
+\section{Kết luận chung}
+Takeaways toàn báo cáo, hạn chế, hướng tiếp theo.
+\end{document}

@@ -6,8 +6,8 @@ scikit-learn==1.9.1
 matplotlib==3.11.2
 tensorboard==2.21.0
 
+yacs==0.1.8
+pyyaml==6.0.3
+
 flake8==7.4.1
 isort==9.0.2
-
--e ./third_party/flame
--e ./third_party/ignite

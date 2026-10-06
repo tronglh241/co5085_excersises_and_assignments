@@ -223,6 +223,15 @@ docs/.jekyll-cache/
 docs/.jekyll-metadata
 docs/.sass-cache/
 
+# LaTeX byproducts (the report PDF itself stays tracked)
+*.aux
+*.log
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
 # Experiment outputs (datasets, checkpoints, logs)
 data/
 checkpoints/

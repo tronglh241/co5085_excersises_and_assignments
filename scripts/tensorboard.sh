@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tensorboard.sh [logdir] — TensorBoard, RUN INSIDE the container shell (see shell.sh).
+# tensorboard.sh [logdir] — TensorBoard, RUN INSIDE the container shell (see shell/dev.sh).
 # Open http://localhost:6006/ ; Ctrl-C stops.
 
 set -euo pipefail

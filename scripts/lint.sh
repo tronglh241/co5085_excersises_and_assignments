@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lint.sh [dirs...] — style gate, RUN INSIDE the container shell (see shell.sh).
+# lint.sh [dirs...] — style gate, RUN INSIDE the container shell (see shell/dev.sh).
 # isort check + flake8 over our code only.
 
 set -euo pipefail
@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 paths=()
 
 if [ "$#" -eq 0 ]; then
-  for p in datasets handlers models scripts; do
+  for p in datasets models scripts; do
     [ -d "$p" ] && paths+=("$p")
   done
 else
