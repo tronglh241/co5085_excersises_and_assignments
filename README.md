@@ -1,12 +1,16 @@
 # CO5085: Deep Learning and its Applications in Computer Vision
 
-Coursework repository for **HK261**: four exercises (**E1-E4**) and two assignments
-(**A1-A2**) covering deep learning for computer vision, from basic classifiers to
-transformers, sequence models, generative models, and a self-chosen research topic.
+Coursework repository for **HK261**: three exercises (**E1–E3**) and two
+assignments (**A1–A2**) covering deep learning for computer vision, from basic
+classifiers to transformers, sequence models, and self-chosen topics.
+Full requirements: `exercise.pdf`, `assignment_1.pdf`, `assignment_2.pdf`.
 
 Every experiment is **config-driven**: a YAML file describes the data, model,
-optimizer, loss, metrics, and handlers, and a single command trains or evaluates it.
-Results are written up as posts on a report site in `docs/`.
+and hyperparameters; it is evaluated to Python objects with our own vendored
+config loader, and a per-task `train.py` runs an explicit PyTorch training loop
+(`forward → loss → backward() → optimizer.step()` — no ignite, no flame, no
+`trainer.fit()`). Results are written up in `reports/exercises.pdf` and in posts
+on the report site in `docs/`.
 
 Report site: https://tronglh241.github.io/co5085_excersises_and_assignments
 
@@ -15,18 +19,22 @@ Report site: https://tronglh241.github.io/co5085_excersises_and_assignments
 | ID | Topic | What we compare |
 |----|-------|-----------------|
 | E1 | Image classification on a small set (MNIST / Fashion-MNIST / CIFAR-10) | Softmax vs MLP vs CNN: accuracy, capacity, error cases |
-| E2 | Multi-Head Self-Attention, from scratch and with PyTorch modules | Several tokenizations (patch, pixel/row, CNN-stem, CLS + patches) |
-| E3 | Sequence models on images as sequences (e.g. MNIST rows) | LSTM and GRU vs a feed-forward / CNN baseline |
-| E4 | Generative models on a small MNIST-like set | VAE, GAN, Diffusion: sample quality, latent space, compute |
+| E2 | Multi-Head Self-Attention, from scratch and with PyTorch modules | Several tokenizations (patch, pixel/row, CNN-stem) on the same set |
+| E3 | LSTM and GRU on images as sequences | Sequence views + LSTM vs GRU, vs the E1 MLP/CNN baseline |
 | A1 | Self-chosen large image dataset | CNN vs Transformer; from scratch vs pretrained; frozen, partially frozen, full finetune |
-| A2 | Self-chosen topic (detection, segmentation, ...) | Working pipeline plus analysis of one related paper |
+| A2 | Self-chosen non-classification topic | Working pipeline (≥2 variants) plus analysis of one related paper |
 
 ## How it works
 
-- **[ignite](https://github.com/pytorch/ignite)** provides the training engine, metrics, and handlers.
-- **[flame](https://github.com/tronglh241/flame)** builds on ignite and turns a YAML config into a full train or evaluation run (engine, metrics, checkpointing, early stopping, TensorBoard logging).
-- Our own code lives in `datasets/`, `models/`, and `handlers/`, and configs in `configs/` reference it. The two libraries are git submodules in `third_party/` and are never edited; fixes go in our code or in config.
-- Training writes TensorBoard events to `logs/` and checkpoints to `checkpoints/`. Scripts turn those logs into CSVs and figures, which are used in the posts under `docs/`.
+- Each task lives in its own directory (`E1/`, `E2/`, …) with `configs/*.yaml`,
+  `datasets/`, `models/`, `train.py`, `evaluate.py`, and `scripts/`.
+- Shared training utilities live in `common/` (config loading, epoch-loop
+  helpers, metrics, checkpointing, schedulers, early stopping, TensorBoard
+  logging, seeding). Task code stays thin; shared logic is never duplicated.
+- Training writes TensorBoard events to `logs/` and checkpoints to
+  `checkpoints/`. Scripts turn those logs into CSVs and figures for the report.
+- The graded exercises report is `reports/exercises.pdf` (LaTeX, committed);
+  `docs/` posts accompany it on the site.
 
 ## Prerequisites
 
@@ -41,34 +49,25 @@ No Python or Ruby toolchain is required on the host.
 ## Quickstart
 
 ```bash
-git clone --recurse-submodules https://github.com/tronglh241/co5085_excersises_and_assignments
+git clone https://github.com/tronglh241/co5085_excersises_and_assignments
 cd co5085_excersises_and_assignments
-# already cloned without submodules?  git submodule update --init --recursive
 
 cp .env.example .env         # once; set ids from `id -u` / `id -g`
-scripts/shell.sh [gpu|cpu]   # default gpu
+scripts/shell/dev.sh [gpu|cpu]   # default gpu (RUNS ON HOST)
 ```
 
-All commands in the sections below run inside this container shell.
+All commands in the sections below run inside this container shell,
+except `scripts/build_tex.sh` (report PDF), which orchestrates Docker from the host.
 
 ## Usage
 
 ### Train and evaluate
 
-Pattern:
+Pattern (per task; see the task `README.md` for its configs):
 
 ```bash
-flame run configs/<exercise>/<train|test>/<config_name>.yml
-```
-
-`<exercise>` is `e1`-`e4` or `a1`-`a2`. The same command trains or evaluates,
-depending on whether the config is under `train/` or `test/`.
-
-Example (E1, softmax classifier):
-
-```bash
-flame run configs/e1/train/softmax.yml   # train
-flame run configs/e1/test/softmax.yml    # evaluate
+python E1/train.py --config E1/configs/softmax.yaml
+python E1/evaluate.py --config E1/configs/softmax.yaml --checkpoint <run>/best.pt
 ```
 
 TensorBoard events are written to `logs/` and checkpoints to `checkpoints/`.
@@ -83,6 +82,13 @@ python scripts/extract_tensorboard.py [--logdir <run|parent>]   # per-run metric
 `--logdir` is optional. It accepts a single run directory or a parent directory
 containing several runs.
 
+### Report PDF
+
+```bash
+scripts/shell/latex.sh   # open the latex container shell (RUNS ON HOST)
+scripts/build_tex.sh [texfile]   # inside it: builds the PDF (default reports/exercises.tex)
+```
+
 ### Docs site
 
 ```bash
@@ -93,19 +99,19 @@ scripts/build.sh   # CI gate; run before every push
 ### Code style
 
 ```bash
-scripts/lint.sh    # isort + flake8 over datasets/ handlers/ models/ scripts/
+scripts/lint.sh    # isort + flake8 over the Python packages
 ```
 
 ## Layout
 
 ```text
-configs/{e,a}N/{train,test}/<name>.yml      flame experiment configs
-datasets/{e,a}N/                            torch datasets
-handlers/                                   our ignite handlers
-models/{e,a}N/                              torch modules
-scripts/{e,a}N/                             runnable helpers
-scripts/                                    bash script helpers
-docs/                                       Report site
-third_party/                                flame, ignite (git submodules, read-only)
-data/ checkpoints/ logs/                    runtime artifacts, gitignored: never commit
+E1/ E2/ E3/ A1/ A2/            task dirs: README, configs, datasets, models,
+                               train.py, evaluate.py, scripts/
+common/                        our training utils (config, loop, metrics,
+                               checkpoint, scheduler, early stopping, tb, seed)
+reports/                       exercises.tex -> exercises.pdf (committed)
+docs/                          Report site
+dockers/                       Dockerfile (code+jekyll) + Dockerfile.latex (report PDF)
+scripts/                       dev entry points + extract_tensorboard.py
+data/ checkpoints/ logs/       runtime artifacts, gitignored: never commit
 ```
