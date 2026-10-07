@@ -4,7 +4,7 @@
 # Open http://localhost:4000/co5085_excersises_and_assignments/ ; Ctrl-C stops cleanly.
 
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 
 # Gems live in the container layer: reinstall if a recreate wiped them
 cd docs && (bundle check || bundle install)

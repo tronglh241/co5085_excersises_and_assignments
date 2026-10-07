@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 paths=()
 
 if [ "$#" -eq 0 ]; then
-  for p in datasets models scripts; do
+  for p in common datasets models scripts; do
     [ -d "$p" ] && paths+=("$p")
   done
 else

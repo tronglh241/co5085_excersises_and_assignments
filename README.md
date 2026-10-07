@@ -56,8 +56,8 @@ cp .env.example .env         # once; set ids from `id -u` / `id -g`
 scripts/shell/dev.sh [gpu|cpu]   # default gpu (RUNS ON HOST)
 ```
 
-All commands in the sections below run inside this container shell,
-except `scripts/build_tex.sh` (report PDF), which orchestrates Docker from the host.
+All commands in the sections below run inside a container shell
+(dev shell, except the report PDF which builds in the latex shell).
 
 ## Usage
 
@@ -75,8 +75,8 @@ TensorBoard events are written to `logs/` and checkpoints to `checkpoints/`.
 ### Inspect results
 
 ```bash
-scripts/tensorboard.sh [logdir]                                 # live curves at localhost:6006 (default: logs/)
-python scripts/extract_tensorboard.py [--logdir <run|parent>]   # per-run metrics.csv for plotting
+scripts/tensorboard/serve.sh [logdir]                     # live curves at localhost:6006 (default: logs/)
+python scripts/tensorboard/extract.py [--logdir <run|parent>]   # per-run metrics.csv for plotting
 ```
 
 `--logdir` is optional. It accepts a single run directory or a parent directory
@@ -86,14 +86,14 @@ containing several runs.
 
 ```bash
 scripts/shell/latex.sh   # open the latex container shell (RUNS ON HOST)
-scripts/build_tex.sh [texfile]   # inside it: builds the PDF (default reports/exercises.tex)
+scripts/report/build.sh [texfile]   # inside it: builds the PDF (default reports/exercises.tex)
 ```
 
 ### Docs site
 
 ```bash
-scripts/serve.sh   # live preview at localhost:4000/co5085_excersises_and_assignments/
-scripts/build.sh   # CI gate; run before every push
+scripts/page/serve.sh   # live preview at localhost:4000/co5085_excersises_and_assignments/
+scripts/page/build.sh   # CI gate; run before every push
 ```
 
 ### Code style
@@ -112,6 +112,6 @@ common/                        our training utils (config, loop, metrics,
 reports/                       exercises.tex -> exercises.pdf (committed)
 docs/                          Report site
 dockers/                       Dockerfile (code+jekyll) + Dockerfile.latex (report PDF)
-scripts/                       dev entry points + extract_tensorboard.py
+scripts/                       shell/, page/, report/, tensorboard/ groups + lint.sh
 data/ checkpoints/ logs/       runtime artifacts, gitignored: never commit
 ```

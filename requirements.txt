@@ -3,8 +3,9 @@
 torch==2.7.1
 torchvision==0.22.1
 scikit-learn==1.9.1
-matplotlib==3.11.2
+numpy==2.5.3
 tensorboard==2.21.0
+matplotlib==3.11.2
 
 yacs==0.1.8
 pyyaml==6.0.3

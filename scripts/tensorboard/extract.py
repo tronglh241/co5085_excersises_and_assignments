@@ -5,8 +5,7 @@ from pathlib import Path
 from tensorboard.backend.event_processing import event_accumulator
 
 
-def find_run_dirs(root: Path) -> list[Path]:
-    """Leaf dirs holding event files, or [root] itself if it holds them."""
+def find_run_dirs(root):
     if any(p.is_file() and p.name.startswith("events.out.tfevents") for p in root.iterdir()):
         return [root]
 
@@ -20,8 +19,7 @@ def find_run_dirs(root: Path) -> list[Path]:
     return runs
 
 
-def extract_run(run_dir: Path, filename: str, tags: set[str] | None) -> Path:
-    """Dump one run folder's scalars to <run_dir>/<filename>; return the path."""
+def extract_run(run_dir, filename, tags):
     ea = event_accumulator.EventAccumulator(str(run_dir), size_guidance={"scalars": 0})
     ea.Reload()
     scalar_tags = ea.Tags()["scalars"]
@@ -34,7 +32,7 @@ def extract_run(run_dir: Path, filename: str, tags: set[str] | None) -> Path:
 
         scalar_tags = [t for t in scalar_tags if t in tags]
 
-    latest: dict[tuple[str, int], tuple[float, float]] = {}
+    latest = {}
 
     for tag in scalar_tags:
         for ev in ea.Scalars(tag):
@@ -55,8 +53,8 @@ def extract_run(run_dir: Path, filename: str, tags: set[str] | None) -> Path:
     return out
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+def main():
+    parser = argparse.ArgumentParser(description="Extract TensorBoard scalars to per-run CSVs.")
     parser.add_argument("--logdir", default='logs', help="run folder or parent folder to walk")
     parser.add_argument("--tags", default=None, help="comma-separated scalar tags (default: all)")
     parser.add_argument("--filename", default="metrics.csv", help="csv name written into each run folder")

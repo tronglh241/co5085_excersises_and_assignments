@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import torch
 from torchvision.datasets import MNIST as TorchvisionMNIST
 
-from datasets.e1.mnist import MNIST
+from datasets.mnist import MNIST
 
 ASSETS = Path("docs", "assets", "e1")
 N_CLASSES = 10

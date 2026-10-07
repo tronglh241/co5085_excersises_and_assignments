@@ -45,8 +45,8 @@ common/               our training utils: config (vendored liberyacs), loop,
                       metrics, checkpoint, scheduler, early_stopping, tb, seed
 reports/              exercises.tex -> exercises.pdf (committed)
 docs/                 Chirpy site: _posts/, _tabs/, _data/, assets/
-scripts/              dev entry points: shell/dev.sh, build.sh, serve.sh, lint.sh,
-                      tensorboard.sh, shell/latex.sh, build_tex.sh + extract_tensorboard.py
+scripts/              groups: shell/dev.sh + shell/latex.sh, page/build.sh + page/serve.sh,
+                      report/build.sh, tensorboard/serve.sh + tensorboard/extract.py; plus lint.sh
 dockers/              Dockerfile (code+jekyll) + Dockerfile.latex (report PDF)
 data/ checkpoints/ logs/   runtime artifacts, gitignored
 ```
@@ -83,8 +83,8 @@ scripts/shell/dev.sh [gpu|cpu]   # default gpu; repo mounted at /workspace (RUNS
 ```bash
 python E1/train.py --config E1/configs/softmax.yaml
 python E1/evaluate.py --config E1/configs/softmax.yaml --checkpoint <run>/best.pt
-scripts/tensorboard.sh [logdir]                   # live curves at localhost:6006 (default logs/)
-python scripts/extract_tensorboard.py --logdir <run|parent> [--tags t1,t2] [--filename metrics.csv]
+scripts/tensorboard/serve.sh [logdir]            # live curves at localhost:6006 (default logs/)
+python scripts/tensorboard/extract.py --logdir <run|parent> [--tags t1,t2] [--filename metrics.csv]
 # writes <run>/metrics.csv (tag,step,wall_time,value) for offline reading/plotting
 ```
 
@@ -98,15 +98,15 @@ python scripts/extract_tensorboard.py --logdir <run|parent> [--tags t1,t2] [--fi
   remarks — not just accuracy lists).
 - Report PDF builds in its own image (`dockers/Dockerfile.latex`,
   `texlive/texlive:latest-medium`); open it with `scripts/shell/latex.sh`,
-  then run `scripts/build_tex.sh [texfile]` inside (default
+  then run `scripts/report/build.sh [texfile]` inside (default
   `reports/exercises.tex`). Commit `reports/exercises.pdf` (Pages links it).
 - Posts under `docs/_posts/` stay as companions; link the PDF.
 
 ## 9. Serve the docs locally
 
 ```bash
-scripts/serve.sh   # livereload at localhost:4000/co5085_excersises_and_assignments/
-scripts/build.sh   # CI-equivalent gate; run before every push
+scripts/page/serve.sh   # livereload at localhost:4000/co5085_excersises_and_assignments/
+scripts/page/build.sh   # CI-equivalent gate; run before every push
 ```
 
 - `_config.yml` is not hot-reloaded: restart `serve.sh` after editing it.
@@ -131,13 +131,17 @@ media_subpath: /assets/{e,a}N/
 
 - Generate figures with task scripts (e.g. `python E1/scripts/eda.py`) into
   `docs/assets/{e,a}N/`; reference by filename (resolved via `media_subpath`).
-- `scripts/build.sh` must pass before push.
+- `scripts/page/build.sh` must pass before push.
 
 ## 11. Adding a new experiment
 
 1. Task dir `E*/`/`A*/`: `datasets/`, `models/`, `configs/*.yaml`, `train.py`,
    `evaluate.py`, per-task `README.md` (brief + run commands).
-2. Shared logic goes in `common/`, never duplicated per task.
+2. Shared logic goes in `common/`, never duplicated per task. Divergent loops subclass
+   the engine and override the smallest differing unit (`prepare_batch`, then
+   `train_step`/`eval_step`, then `run`), keeping the six events and output contracts;
+   colocate variants with the task, promote to `common/` on second use. Keep
+   `@torch.no_grad()` on `eval_step` overrides unless the variant needs grad.
 3. Figures via task `scripts/` into `docs/assets/`; chapter into `reports/`.
 4. Run the checks in section 12.
 
