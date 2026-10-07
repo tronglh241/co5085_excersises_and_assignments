@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# build.sh [texfile] — build a report PDF (default: reports/exercises.tex).
-# RUN INSIDE the latex container shell (see ../shell/latex.sh).
 
 set -euo pipefail
 cd "$(dirname "$0")/../.."

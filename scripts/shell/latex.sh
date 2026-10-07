@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# latex.sh — open an interactive shell in the latex service container (RUNS ON HOST).
-# Starts the service first if it isn't running. Exits back to host on `exit`.
+
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 service="latex"

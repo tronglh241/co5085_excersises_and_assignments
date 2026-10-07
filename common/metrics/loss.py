@@ -11,8 +11,8 @@ class Loss(Metric):
         self.count = 0
 
     def update(self, output):
-        loss = self.loss_fn(output["y_pred"], output["y"])
-        n = output["y"].size(0)
+        loss = self.loss_fn(output['y_pred'], output['y'])
+        n = output['y'].size(0)
         self.total += loss.item() * n
         self.count += n
 

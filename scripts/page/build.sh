@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# build_page.sh — CI-equivalent gate, RUN INSIDE the container shell (see shell/dev.sh).
-# `jekyll build` only, no server/ports. Run before pushing;
-# exit code is Jekyll's (0 = deploy-safe). For preview use scripts/page/serve.sh.
 
 set -euo pipefail
 cd "$(dirname "$0")/../.."

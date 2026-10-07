@@ -25,21 +25,21 @@ class Trainer(Engine):
         loss = self.loss_fn(self.model(x), y)
         loss.backward()
         self.optimizer.step()
-        return {"loss": loss.item(), "n": y.size(0)}
+        return {'loss': loss.item(), 'n': y.size(0)}
 
     def run(self):
         self._fire(Events.STARTED)
 
-        while self.state["epoch"] < self.max_epochs and not self.should_stop:
+        while self.state['epoch'] < self.max_epochs and not self.should_stop:
             self._fire(Events.EPOCH_STARTED)
 
             for batch in self.data:
                 self._fire(Events.ITERATION_STARTED)
                 self.output = self.train_step(batch)
-                self.state["iteration"] += 1
+                self.state['iteration'] += 1
                 self._fire(Events.ITERATION_COMPLETED)
 
-            self.state["epoch"] += 1
+            self.state['epoch'] += 1
             self._fire(Events.EPOCH_COMPLETED)
 
         self._fire(Events.COMPLETED)

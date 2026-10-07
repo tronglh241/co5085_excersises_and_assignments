@@ -2,17 +2,14 @@ import torch.nn as nn
 
 
 class MLPClassifier(nn.Module):
-    """MLP classifier on the flattened image (one hidden layer per entry in hidden_dims).
-
-    Args:
-        in_channels: input channels.
-        image_size: spatial size, assumed square.
-        hidden_dims: widths of the hidden layers (tuple).
-        num_classes: output classes.
-        dropout: dropout probability after each activation (0 disables).
-    """
-
-    def __init__(self, in_channels=1, image_size=28, hidden_dims=(256, 128), num_classes=10, dropout=0.0):
+    def __init__(
+        self,
+        in_channels=1,
+        image_size=28,
+        hidden_dims=(256, 128),
+        num_classes=10,
+        dropout=0.0,
+    ):
         super().__init__()
         dims = (in_channels * image_size * image_size,) + tuple(hidden_dims)
         layers = [nn.Flatten(1)]

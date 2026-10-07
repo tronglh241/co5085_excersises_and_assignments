@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# dev.sh [gpu|cpu] — open an interactive dev shell in the service container (RUNS ON HOST).
-# Starts the service first if it isn't running. Exits back to host on `exit`.
+
 set -euo pipefail
 cd "$(dirname "$0")/.."
 service="${1:-gpu}"

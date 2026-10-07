@@ -12,8 +12,8 @@ class ConfusionMatrix(Metric):
         self.cm = torch.zeros(self.num_classes, self.num_classes, dtype=torch.long)
 
     def update(self, output):
-        pred = output["y_pred"].argmax(dim=1).cpu()
-        targets = output["y"].cpu().long()
+        pred = output['y_pred'].argmax(dim=1).cpu()
+        targets = output['y'].cpu().long()
         self.cm.index_put_((targets, pred), torch.ones_like(targets), accumulate=True)
 
     def compute(self):

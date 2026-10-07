@@ -3,23 +3,20 @@ from torchvision.datasets import MNIST as _TorchvisionMNIST
 
 
 class MNIST(_TorchvisionMNIST):
-    """MNIST with a stratified train/val split of the 60k pool.
+    def __init__(
+        self,
+        root,
+        split='train',
+        val_ratio=1 / 6,
+        seed=42,
+        **kwargs,
+    ):
+        if split not in ('train', 'val', 'test'):
+            raise ValueError(f'unknown split: {split!r} (expected "train", "val" or "test")')
 
-    Args:
-        root: dataset root (downloaded on first use).
-        split: ``"train"`` (5/6), ``"val"`` (1/6, stratified) or ``"test"`` (official 10k).
-        val_ratio: val fraction of the pool (default 1/6 = 10k, mirroring test).
-        seed: fixes the split for reproducibility.
-        **kwargs: torchvision args (e.g. per-split transform).
-    """
+        super().__init__(root, train=(split != 'test'), download=True, **kwargs)
 
-    def __init__(self, root, split="train", val_ratio=1 / 6, seed=42, **kwargs):
-        if split not in ("train", "val", "test"):
-            raise ValueError(f"unknown split: {split!r} (expected 'train', 'val' or 'test')")
-
-        super().__init__(root, train=(split != "test"), download=True, **kwargs)
-
-        if split == "test":
+        if split == 'test':
             self.indices = None
         else:
             train_idx, val_idx = train_test_split(
@@ -28,7 +25,7 @@ class MNIST(_TorchvisionMNIST):
                 stratify=list(self.targets),
                 random_state=seed,
             )
-            self.indices = list(train_idx if split == "train" else val_idx)
+            self.indices = list(train_idx if split == 'train' else val_idx)
 
     def __len__(self):
         return len(self.data) if self.indices is None else len(self.indices)

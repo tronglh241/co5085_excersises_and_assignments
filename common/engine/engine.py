@@ -4,12 +4,12 @@ import torch
 
 
 class Events(str, Enum):
-    STARTED = "started"
-    EPOCH_STARTED = "epoch_started"
-    ITERATION_STARTED = "iteration_started"
-    ITERATION_COMPLETED = "iteration_completed"
-    EPOCH_COMPLETED = "epoch_completed"
-    COMPLETED = "completed"
+    STARTED = 'started'
+    EPOCH_STARTED = 'epoch_started'
+    ITERATION_STARTED = 'iteration_started'
+    ITERATION_COMPLETED = 'iteration_completed'
+    EPOCH_COMPLETED = 'epoch_completed'
+    COMPLETED = 'completed'
 
 
 ALL_EVENTS = tuple(Events)
@@ -23,14 +23,14 @@ def default_prepare_batch(batch, device):
 class Engine:
     def __init__(self, data, model, device=None, max_epochs=1):
         if device is None:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
+            device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         self.data = data
         self.device = torch.device(device)
         self.model = model.to(self.device)
         self.max_epochs = max_epochs
 
-        self.state = {"epoch": 0, "iteration": 0}
+        self.state = {'epoch': 0, 'iteration': 0}
         self.output = None
         self.result = None
         self.handlers = {event: [] for event in ALL_EVENTS}
@@ -39,7 +39,7 @@ class Engine:
         try:
             key = Events(event)
         except ValueError:
-            raise ValueError(f"unknown event {event!r}; expected one of {sorted(self.handlers)}") from None
+            raise ValueError(f'unknown event {event!r}; expected one of {sorted(self.handlers)}') from None
 
         self.handlers[key].append((handler, args, kwargs))
 
@@ -68,11 +68,11 @@ class Engine:
             handler(self, *args, **kwargs)
 
     def state_dict(self):
-        return {"epoch": self.state["epoch"], "iteration": self.state["iteration"]}
+        return {'epoch': self.state['epoch'], 'iteration': self.state['iteration']}
 
     def load_state_dict(self, state_dict):
-        for key in ("epoch", "iteration"):
+        for key in ('epoch', 'iteration'):
             if key not in state_dict:
-                raise ValueError(f"missing required key {key!r} in {sorted(state_dict)}")
+                raise ValueError(f'missing required key {key!r} in {sorted(state_dict)}')
 
             self.state[key] = state_dict[key]

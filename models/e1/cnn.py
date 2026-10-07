@@ -2,23 +2,18 @@ import torch.nn as nn
 
 
 class CNNClassifier(nn.Module):
-    """CNN classifier: one conv block per entry in ``channels`` + FC head.
-
-    Args:
-        in_channels: input channels.
-        channels: width of each conv block (conv3x3/pad1 + ReLU + MaxPool2);
-            tuple length is the depth.
-        fc_dim: width of the fully-connected hidden layer.
-        num_classes: output classes.
-        image_size: input spatial size, assumed square and divisible
-            by 2**(depth).
-    """
-
-    def __init__(self, in_channels=1, channels=(16, 32), fc_dim=128, num_classes=10, image_size=28):
+    def __init__(
+        self,
+        in_channels=1,
+        channels=(16, 32),
+        fc_dim=128,
+        num_classes=10,
+        image_size=28,
+    ):
         super().__init__()
         channels = tuple(channels)
         depth = len(channels)
-        assert image_size % (2**depth) == 0, "image_size must survive depth MaxPool2ds"
+        assert image_size % (2**depth) == 0, 'image_size must survive depth MaxPool2ds'
 
         blocks = []
         fan_in = in_channels

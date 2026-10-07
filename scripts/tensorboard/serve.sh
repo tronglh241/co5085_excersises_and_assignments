@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# serve.sh [logdir] — TensorBoard live curves, RUN INSIDE the container shell (see ../shell/dev.sh).
-# Open http://localhost:6006/ ; Ctrl-C stops.
 
 set -euo pipefail
 cd "$(dirname "$0")/../.."
