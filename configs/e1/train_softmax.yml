@@ -127,5 +127,15 @@ metrics:
     kwargs:
       num_classes: 10
 
+logging:
+  tensorboard:
+    module: common.handlers.logging.tensorboard
+    name: TensorBoardLogger
+    kwargs:
+      log_dir: "'logs/e1/softmax'"
+  tqdm:
+    module: common.handlers.logging.tqdm_logger
+    name: TQDMLogger
+
 extralibs:
   transforms: torchvision.transforms
