@@ -17,15 +17,20 @@ if __name__ == '__main__':
     cfg = CfgNode.load(args.config)
     validate_train_config(cfg)
 
-    for name, metric in cfg.metrics.items():
-        metric.attach(cfg.evaluators.train, name)
-        metric.attach(cfg.evaluators.valid, name)
+    if 'loader' in cfg:
+        cfg.loader.attach(cfg.trainer, cfg)
 
-    def evaluate(engine):
-        cfg.evaluators.train.run()
-        cfg.evaluators.valid.run()
+    if 'evaluators' in cfg:
+        if 'metrics' in cfg:
+            for key in cfg.evaluators:
+                for name, metric in cfg.metrics.items():
+                    metric.attach(cfg.evaluators[key], name)
 
-    cfg.trainer.on_epoch_completed(evaluate)
+        def evaluate(engine):
+            for key in cfg.evaluators:
+                cfg.evaluators[key].run()
+
+        cfg.trainer.on_epoch_completed(evaluate)
 
     if 'logging' in cfg:
         if 'tensorboard' in cfg.logging:
@@ -33,5 +38,12 @@ if __name__ == '__main__':
 
         if 'tqdm' in cfg.logging:
             cfg.logging.tqdm.attach(cfg.trainer, cfg.evaluators)
+
+    if 'checkpoint' in cfg:
+        if 'best' in cfg.checkpoint:
+            cfg.checkpoint.best.attach(cfg.trainer, cfg)
+
+        if 'backup' in cfg.checkpoint:
+            cfg.checkpoint.backup.attach(cfg.trainer, cfg)
 
     cfg.trainer.run()
