@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader
 
 from common.engine.evaluator import Evaluator
 from common.engine.trainer import Trainer
+from common.handlers.checkpoint.loader import CheckpointLoader
 from common.handlers.early_stopping import EarlyStopping
 from common.handlers.logging.tensorboard import TensorBoardLogger
 from common.handlers.logging.tqdm_logger import TQDMLogger
@@ -40,6 +41,38 @@ def validate_train_config(cfg):
 
     if 'early_stopping' in cfg:
         assert isinstance(cfg.early_stopping, EarlyStopping), 'early_stopping must be an EarlyStopping'
+
+    if 'logging' in cfg:
+        has_tb = 'tensorboard' in cfg.logging
+        has_tqdm = 'tqdm' in cfg.logging
+
+        assert has_tb or has_tqdm, "config logging block must define 'tensorboard' and/or 'tqdm'"
+
+        if 'tensorboard' in cfg.logging:
+            logger = cfg.logging.tensorboard
+            assert isinstance(logger, TensorBoardLogger), 'logging.tensorboard must be a TensorBoardLogger'
+            assert isinstance(logger.log_dir, str), 'logging.tensorboard log_dir must be a string'
+
+        if 'tqdm' in cfg.logging:
+            assert isinstance(cfg.logging.tqdm, TQDMLogger), 'logging.tqdm must be a TQDMLogger'
+
+
+def validate_eval_config(cfg):
+    for key in ('data', 'model', 'evaluator', 'loader'):
+        assert key in cfg, f"config missing required key: '{key}'"
+
+    for key in cfg.data:
+        assert isinstance(cfg.data[key], DataLoader), f'data.{key} must be a DataLoader'
+
+    assert isinstance(cfg.model, nn.Module), 'model must be an nn.Module'
+    assert isinstance(cfg.evaluator, Evaluator), 'evaluator must be an Evaluator'
+    assert isinstance(cfg.loader, CheckpointLoader), 'loader must be a CheckpointLoader'
+    assert cfg.loader.path, 'loader.path must be set to the checkpoint file to evaluate'
+
+    if 'metrics' in cfg:
+        assert len(cfg.metrics) > 0, 'metrics must be non-empty'
+        for name, metric in cfg.metrics.items():
+            assert callable(getattr(metric, 'attach', None)), f"metric '{name}' must define attach(evaluator, name)"
 
     if 'logging' in cfg:
         has_tb = 'tensorboard' in cfg.logging

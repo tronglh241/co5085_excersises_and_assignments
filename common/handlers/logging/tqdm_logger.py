@@ -4,12 +4,13 @@ from common.engine.engine import Events
 
 
 class TQDMLogger:
-    def attach(self, trainer, evaluators):
-        trainer.add_event_handler(Events.EPOCH_STARTED, self._train_started)
-        trainer.add_event_handler(Events.ITERATION_COMPLETED, self._train_iter)
-        trainer.add_event_handler(Events.EPOCH_COMPLETED, self._train_done)
+    def attach(self, trainer=None, evaluators=None):
+        if trainer is not None:
+            trainer.add_event_handler(Events.EPOCH_STARTED, self._train_started)
+            trainer.add_event_handler(Events.ITERATION_COMPLETED, self._train_iter)
+            trainer.add_event_handler(Events.EPOCH_COMPLETED, self._train_done)
 
-        for name, evaluator in evaluators.items():
+        for name, evaluator in (evaluators or {}).items():
             evaluator.add_event_handler(Events.EPOCH_STARTED, self._eval_started, name)
             evaluator.add_event_handler(Events.ITERATION_COMPLETED, self._eval_iter)
             evaluator.add_event_handler(Events.EPOCH_COMPLETED, self._eval_done)

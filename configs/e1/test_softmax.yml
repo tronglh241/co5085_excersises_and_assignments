@@ -32,6 +32,13 @@ evaluator:
     model: model
     device: null
 
+loader:
+  module: common.handlers.checkpoint.loader
+  name: CheckpointLoader
+  kwargs:
+    path: null
+    modules: ["'model'"]
+
 metrics:
   loss:
     module: common.metrics.loss

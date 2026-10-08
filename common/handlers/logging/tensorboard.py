@@ -11,13 +11,17 @@ class TensorBoardLogger:
         self.log_dir = os.path.join(log_dir, datetime.now().strftime('%y%m%d%H%M%S'))
         self.writer = SummaryWriter(self.log_dir)
 
-    def attach(self, trainer, evaluators):
-        trainer.add_event_handler(Events.ITERATION_COMPLETED, self._log_train_loss)
+    def attach(self, trainer=None, evaluators=None):
+        evaluators = evaluators or {}
+        if trainer is not None:
+            trainer.add_event_handler(Events.ITERATION_COMPLETED, self._log_train_loss)
 
         for name, evaluator in evaluators.items():
             evaluator.add_event_handler(Events.EPOCH_COMPLETED, self._log_eval_metrics, name)
 
-        trainer.add_event_handler(Events.COMPLETED, self._close)
+        closer = trainer if trainer is not None else next(iter(evaluators.values()), None)
+        if closer is not None:
+            closer.add_event_handler(Events.COMPLETED, self._close)
 
     def _log_train_loss(self, engine):
         self.writer.add_scalar('training/loss', engine.output['loss'], engine.state['iteration'])
