@@ -11,7 +11,8 @@ def recall_from_cm(cm):
 
 
 class Recall(Metric):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, average=False):
+        self.average = average
         self.cm = ConfusionMatrix(num_classes)
         self.reset()
 
@@ -22,4 +23,5 @@ class Recall(Metric):
         self.cm.update(output)
 
     def compute(self):
-        return recall_from_cm(self.cm.compute())
+        recall = recall_from_cm(self.cm.compute())
+        return recall.mean().item() if self.average else recall

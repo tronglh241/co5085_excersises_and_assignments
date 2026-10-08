@@ -29,10 +29,13 @@ def validate_train_config(cfg):
     if 'logging' in cfg:
         has_tb = 'tensorboard' in cfg.logging
         has_tqdm = 'tqdm' in cfg.logging
+
         assert has_tb or has_tqdm, "config logging block must define 'tensorboard' and/or 'tqdm'"
+
         if 'tensorboard' in cfg.logging:
             logger = cfg.logging.tensorboard
             assert isinstance(logger, TensorBoardLogger), 'logging.tensorboard must be a TensorBoardLogger'
             assert isinstance(logger.log_dir, str), 'logging.tensorboard log_dir must be a string'
+
         if 'tqdm' in cfg.logging:
             assert isinstance(cfg.logging.tqdm, TQDMLogger), 'logging.tqdm must be a TQDMLogger'

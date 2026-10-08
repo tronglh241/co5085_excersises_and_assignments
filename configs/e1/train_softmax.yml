@@ -60,11 +60,10 @@ model:
 
 optimizer:
   module: torch.optim
-  name: SGD
+  name: Adam
   kwargs:
     params: model.parameters()
-    lr: 0.01
-    momentum: 0.9
+    lr: 0.001
 
 loss_fn:
   module: torch.nn
@@ -116,23 +115,26 @@ metrics:
     name: Precision
     kwargs:
       num_classes: 10
+      average: True
   recall:
     module: common.metrics.recall
     name: Recall
     kwargs:
       num_classes: 10
+      average: True
   f1_score:
     module: common.metrics.f1_score
     name: F1Score
     kwargs:
       num_classes: 10
+      average: True
 
 logging:
   tensorboard:
     module: common.handlers.logging.tensorboard
     name: TensorBoardLogger
     kwargs:
-      log_dir: "'logs/e1/softmax'"
+      log_dir: "'logs/e1/train_softmax'"
   tqdm:
     module: common.handlers.logging.tqdm_logger
     name: TQDMLogger

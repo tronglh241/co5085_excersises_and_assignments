@@ -11,7 +11,8 @@ def precision_from_cm(cm):
 
 
 class Precision(Metric):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, average=False):
+        self.average = average
         self.cm = ConfusionMatrix(num_classes)
         self.reset()
 
@@ -22,4 +23,5 @@ class Precision(Metric):
         self.cm.update(output)
 
     def compute(self):
-        return precision_from_cm(self.cm.compute())
+        precision = precision_from_cm(self.cm.compute())
+        return precision.mean().item() if self.average else precision

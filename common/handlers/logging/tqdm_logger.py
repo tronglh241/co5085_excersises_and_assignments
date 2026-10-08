@@ -8,6 +8,7 @@ class TQDMLogger:
         trainer.add_event_handler(Events.EPOCH_STARTED, self._train_started)
         trainer.add_event_handler(Events.ITERATION_COMPLETED, self._train_iter)
         trainer.add_event_handler(Events.EPOCH_COMPLETED, self._train_done)
+
         for name, evaluator in evaluators.items():
             evaluator.add_event_handler(Events.EPOCH_STARTED, self._eval_started, name)
             evaluator.add_event_handler(Events.ITERATION_COMPLETED, self._eval_iter)
@@ -15,7 +16,7 @@ class TQDMLogger:
 
     def _train_started(self, engine):
         epoch = engine.state['epoch'] + 1
-        desc = f'epoch {epoch}/{engine.max_epochs}'
+        desc = f'Epoch {epoch}/{engine.max_epochs}'
         self._train_bar = tqdm(total=len(engine.data), desc=desc, position=0, leave=True)
 
     def _train_iter(self, engine):
@@ -26,7 +27,7 @@ class TQDMLogger:
         self._train_bar.close()
 
     def _eval_started(self, engine, name):
-        self._eval_bar = tqdm(total=len(engine.data), desc=f'eval/{name}', position=1, leave=False)
+        self._eval_bar = tqdm(total=len(engine.data), desc=f'Eval/{name}', position=1, leave=False)
 
     def _eval_iter(self, engine):
         self._eval_bar.update(1)

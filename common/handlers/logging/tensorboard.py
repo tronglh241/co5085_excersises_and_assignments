@@ -20,18 +20,18 @@ class TensorBoardLogger:
         trainer.add_event_handler(Events.COMPLETED, self._close)
 
     def _log_train_loss(self, engine):
-        self.writer.add_scalar('loss/training', engine.output['loss'], engine.state['iteration'])
+        self.writer.add_scalar('training/loss', engine.output['loss'], engine.state['iteration'])
 
     def _log_eval_metrics(self, engine, name):
         for metric, value in engine.result.items():
-            if metric == 'n':
+            if metric == 'n':  # Number of samples
                 continue
 
             if hasattr(value, 'numel') and value.numel() > 1:
                 for i, v in enumerate(value):
-                    self.writer.add_scalar(f'{metric}/{name}/{i}', float(v), engine.state['epoch'])
+                    self.writer.add_scalar(f'{name}/{metric}/{i}', float(v), engine.state['epoch'])
             else:
-                self.writer.add_scalar(f'{metric}/{name}', float(value), engine.state['epoch'])
+                self.writer.add_scalar(f'{name}/{metric}', float(value), engine.state['epoch'])
 
     def _close(self, engine):
         self.writer.close()
