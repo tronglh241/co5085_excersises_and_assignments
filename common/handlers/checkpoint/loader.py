@@ -16,7 +16,7 @@ class CheckpointLoader:
 
     def __call__(self, engine):
         if not self.path:
-            raise ValueError('CheckpointLoader needs a path; pass --resume or set loader.path')
+            return
 
         checkpoint = torch.load(self.path, map_location=self.map_location, weights_only=False)
 

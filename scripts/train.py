@@ -46,4 +46,10 @@ if __name__ == '__main__':
         if 'backup' in cfg.checkpoint:
             cfg.checkpoint.backup.attach(cfg.trainer, cfg)
 
+    if 'scheduler' in cfg:
+        cfg.scheduler.attach(cfg.trainer)
+
+    if 'early_stopping' in cfg:
+        cfg.early_stopping.attach(cfg.trainer)
+
     cfg.trainer.run()
