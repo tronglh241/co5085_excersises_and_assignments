@@ -8,6 +8,7 @@ if _repo_root not in sys.path:
 
 from common.config.config import CfgNode
 from common.config.validate import validate_train_config
+from common.seed import set_seed
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -15,6 +16,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     cfg = CfgNode.load(args.config)
+    set_seed(cfg.get('seed', 42))
     validate_train_config(cfg)
 
     if 'loader' in cfg:
@@ -37,20 +39,19 @@ if __name__ == '__main__':
             cfg.logging.tensorboard.attach(cfg.trainer, 'training', optimizer=cfg.optimizer)
 
             for name, evaluator in cfg.evaluators.items():
-                cfg.logging.tensorboard.attach(evaluator, name)
+                cfg.logging.tensorboard.attach(evaluator, name, epoch_source=cfg.trainer)
 
         if 'tqdm' in cfg.logging:
             cfg.logging.tqdm.attach(cfg.trainer, cfg.evaluators)
 
-    if 'checkpoint' in cfg:
-        if 'best' in cfg.checkpoint:
-            cfg.checkpoint.best.attach(cfg.trainer, cfg)
+    if 'best_checkpoint' in cfg:
+        cfg.best_checkpoint.attach(cfg.trainer, cfg)
 
-        if 'backup' in cfg.checkpoint:
-            cfg.checkpoint.backup.attach(cfg.trainer, cfg)
+    if 'backup_checkpoint' in cfg:
+        cfg.backup_checkpoint.attach(cfg.trainer, cfg)
 
-    if 'scheduler' in cfg:
-        cfg.scheduler.attach(cfg.trainer)
+    if 'lr_scheduler' in cfg:
+        cfg.lr_scheduler.attach(cfg.trainer)
 
     if 'early_stopping' in cfg:
         cfg.early_stopping.attach(cfg.trainer)

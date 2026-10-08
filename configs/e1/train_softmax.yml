@@ -129,17 +129,7 @@ metrics:
       num_classes: 10
       average: True
 
-logging:
-  tensorboard:
-    module: common.handlers.logging.tensorboard
-    name: TensorBoardLogger
-    kwargs:
-      log_dir: "'logs/e1/train_softmax'"
-  tqdm:
-    module: common.handlers.logging.tqdm_logger
-    name: TQDMLogger
-
-scheduler:
+lr_scheduler:
   module: common.handlers.scheduler.metric
   name: MetricScheduler
   kwargs:
@@ -163,6 +153,16 @@ early_stopping:
     mode: "'min'"
     score_name: "'loss'"
 
+logging:
+  tensorboard:
+    module: common.handlers.logging.tensorboard
+    name: TensorBoardLogger
+    kwargs:
+      log_dir: "'logs/e1/train_softmax'"
+  tqdm:
+    module: common.handlers.logging.tqdm_logger
+    name: TQDMLogger
+
 best_checkpoint:
   module: common.handlers.checkpoint.best
   name: BestCheckpoint
@@ -173,6 +173,7 @@ best_checkpoint:
     evaluator: evaluators.valid
     score_name: "'loss'"
     mode: "'min'"
+    n_saved: 1
 
 backup_checkpoint:
   module: common.handlers.checkpoint.backup
@@ -183,8 +184,8 @@ backup_checkpoint:
       - "'model'"
       - "'optimizer'"
       - "'trainer'"
-      - "'scheduler'"
       - "'lr_scheduler'"
+      - "'early_stopping'"
       - "'best_checkpoint'"
     n_saved: 20
 
@@ -193,6 +194,8 @@ loader:
   name: CheckpointLoader
   kwargs:
     path: null
+
+seed: 42
 
 extralibs:
   transforms: torchvision.transforms

@@ -14,6 +14,9 @@ def validate_train_config(cfg):
     for key in ('data', 'model', 'optimizer', 'loss_fn', 'trainer'):
         assert key in cfg, f"config missing required key: '{key}'"
 
+    if 'seed' in cfg:
+        assert isinstance(cfg.seed, int), 'seed must be a plain int'
+
     for split in ('train', 'train_eval', 'valid'):
         assert split in cfg.data, f"config missing data split: 'data.{split}'"
         assert isinstance(cfg.data[split], DataLoader), f'data.{split} must be a DataLoader'
@@ -34,10 +37,10 @@ def validate_train_config(cfg):
     elif 'metrics' in cfg:
         assert False, "config has 'metrics' but no 'evaluators' to attach them to"
 
-    if 'scheduler' in cfg:
-        assert isinstance(cfg.scheduler, Scheduler), 'scheduler must be a Scheduler'
+    if 'lr_scheduler' in cfg:
+        assert isinstance(cfg.lr_scheduler, Scheduler), 'lr_scheduler must be a Scheduler'
         assert 'evaluators' in cfg and 'valid' in cfg.evaluators, \
-            "scheduler need 'evaluators.valid' for the monitored metric"
+            "lr_scheduler need 'evaluators.valid' for the monitored metric"
 
     if 'early_stopping' in cfg:
         assert isinstance(cfg.early_stopping, EarlyStopping), 'early_stopping must be an EarlyStopping'
