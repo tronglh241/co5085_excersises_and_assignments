@@ -13,6 +13,7 @@ class Checkpoint:
         self.n_saved = n_saved
         self.modules = {}
         self._saved = []
+        self.dirname.mkdir(parents=True, exist_ok=True)
 
     def attach(self, trainer, namespace):
         for name in self.module_names:
@@ -57,7 +58,6 @@ class Checkpoint:
         if not self.should_save(engine):
             return
 
-        self.dirname.mkdir(parents=True, exist_ok=True)
         path = self.dirname / self.state_filename(engine)
         torch.save(self.build_state(engine), path)
 

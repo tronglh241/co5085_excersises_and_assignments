@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     if 'logging' in cfg:
         if 'tensorboard' in cfg.logging:
-            cfg.logging.tensorboard.attach(cfg.trainer, 'training')
+            cfg.logging.tensorboard.attach(cfg.trainer, 'training', optimizer=cfg.optimizer)
 
             for name, evaluator in cfg.evaluators.items():
                 cfg.logging.tensorboard.attach(evaluator, name)

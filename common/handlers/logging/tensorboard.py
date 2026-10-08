@@ -11,17 +11,13 @@ class TensorBoardLogger:
         self.log_dir = os.path.join(log_dir, datetime.now().strftime('%y%m%d%H%M%S'))
         self.writer = SummaryWriter(self.log_dir)
 
-    def attach(self, engine, prefix=''):
-        engine.add_event_handler(Events.ITERATION_COMPLETED, self._log_output, prefix)
+    def attach(self, engine, prefix='', optimizer=None):
         engine.add_event_handler(Events.EPOCH_COMPLETED, self._log_result, prefix)
+
+        if optimizer is not None:
+            engine.add_event_handler(Events.EPOCH_COMPLETED, self._log_lr, optimizer, prefix)
+
         engine.add_event_handler(Events.COMPLETED, self._flush)
-
-    def _log_output(self, engine, prefix):
-        tag = f'{prefix}/loss' if prefix else 'loss'
-
-        for key, value in (engine.output or {}).items():
-            if key == 'loss':
-                self.writer.add_scalar(tag, float(value), engine.state['iteration'])
 
     def _log_result(self, engine, prefix):
         for metric, value in (engine.result or {}).items():
@@ -35,6 +31,16 @@ class TensorBoardLogger:
             else:
                 tag = f'{prefix}/{metric}'
                 self.writer.add_scalar(tag, float(value), engine.state['epoch'])
+
+    def _log_lr(self, engine, optimizer, prefix):
+        tag = f'{prefix}/lr' if prefix else 'lr'
+        groups = optimizer.param_groups
+
+        if len(groups) == 1:
+            self.writer.add_scalar(tag, groups[0]['lr'], engine.state['epoch'])
+        else:
+            for i, pg in enumerate(groups):
+                self.writer.add_scalar(f'{tag}/group_{i}', pg['lr'], engine.state['epoch'])
 
     def _flush(self, engine):
         self.writer.flush()

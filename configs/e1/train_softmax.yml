@@ -158,31 +158,35 @@ early_stopping:
   module: common.handlers.early_stopping
   name: EarlyStopping
   kwargs:
-    patience: 10
+    patience: 20
     evaluator: evaluators.valid
     mode: "'min'"
     score_name: "'loss'"
 
-checkpoint:
-  best:
-    module: common.handlers.checkpoint.best
-    name: BestCheckpoint
-    kwargs:
-      dirname:
-      modules:
-        - "'model'"
-      evaluator: evaluators.valid
-      score_name: "'loss'"
-      mode: "'min'"
-  backup:
-    module: common.handlers.checkpoint.backup
-    name: BackupCheckpoint
-    kwargs:
-      dirname
-      modules:
-        - "'model'"
-        - "'trainer'"
-      n_saved: 1
+best_checkpoint:
+  module: common.handlers.checkpoint.best
+  name: BestCheckpoint
+  kwargs:
+    dirname: "'checkpoints/e1/softmax'"
+    modules:
+      - "'model'"
+    evaluator: evaluators.valid
+    score_name: "'loss'"
+    mode: "'min'"
+
+backup_checkpoint:
+  module: common.handlers.checkpoint.backup
+  name: BackupCheckpoint
+  kwargs:
+    dirname: "'checkpoints/e1/softmax'"
+    modules:
+      - "'model'"
+      - "'optimizer'"
+      - "'trainer'"
+      - "'scheduler'"
+      - "'lr_scheduler'"
+      - "'best_checkpoint'"
+    n_saved: 20
 
 loader:
   module: common.handlers.checkpoint.loader
