@@ -31,7 +31,7 @@ data:
             transforms.Normalize((0.1308,), (0.3082,)),
           ])'
       shuffle: False
-      batch_size: 64
+      batch_size: 512
 
   valid:
     module: torch.utils.data
@@ -48,7 +48,7 @@ data:
             transforms.Normalize((0.1308,), (0.3082,)),
           ])'
       shuffle: False
-      batch_size: 64
+      batch_size: 512
 
 model:
   module: models.e1.softmax
@@ -78,7 +78,7 @@ trainer:
     optimizer: optimizer
     loss_fn: loss_fn
     device: null
-    max_epochs: 10
+    max_epochs: 1000
 
 evaluators:
   train:
@@ -138,6 +138,57 @@ logging:
   tqdm:
     module: common.handlers.logging.tqdm_logger
     name: TQDMLogger
+
+scheduler:
+  module: common.handlers.scheduler.metric
+  name: MetricScheduler
+  kwargs:
+    scheduler:
+      module: torch.optim.lr_scheduler
+      name: ReduceLROnPlateau
+      kwargs:
+        optimizer: optimizer
+        mode: "'min'"
+        factor: 0.1
+        patience: 10
+    evaluator: evaluators.valid
+    score_name: "'loss'"
+
+early_stopping:
+  module: common.handlers.early_stopping
+  name: EarlyStopping
+  kwargs:
+    patience: 10
+    evaluator: evaluators.valid
+    mode: "'min'"
+    score_name: "'loss'"
+
+checkpoint:
+  best:
+    module: common.handlers.checkpoint.best
+    name: BestCheckpoint
+    kwargs:
+      dirname:
+      modules:
+        - "'model'"
+      evaluator: evaluators.valid
+      score_name: "'loss'"
+      mode: "'min'"
+  backup:
+    module: common.handlers.checkpoint.backup
+    name: BackupCheckpoint
+    kwargs:
+      dirname
+      modules:
+        - "'model'"
+        - "'trainer'"
+      n_saved: 1
+
+loader:
+  module: common.handlers.checkpoint.loader
+  name: CheckpointLoader
+  kwargs:
+    path: null
 
 extralibs:
   transforms: torchvision.transforms

@@ -27,20 +27,22 @@ def validate_train_config(cfg):
 
         if 'metrics' in cfg:
             assert len(cfg.metrics) > 0, 'metrics must be non-empty'
-            for name, metric in cfg.metrics.items():
-                assert callable(getattr(metric, 'attach', None)), f"metric '{name}' must define attach(evaluator, name)"
+
+        for name, metric in cfg.metrics.items():
+            assert callable(getattr(metric, 'attach', None)), \
+                f"metric '{name}' must define attach(evaluator, name)"
     elif 'metrics' in cfg:
         assert False, "config has 'metrics' but no 'evaluators' to attach them to"
 
-    if 'scheduler' in cfg or 'early_stopping' in cfg:
-        assert 'evaluators' in cfg and 'valid' in cfg.evaluators, \
-            "scheduler/early_stopping need 'evaluators.valid' for the monitored metric"
-
     if 'scheduler' in cfg:
         assert isinstance(cfg.scheduler, Scheduler), 'scheduler must be a Scheduler'
+        assert 'evaluators' in cfg and 'valid' in cfg.evaluators, \
+            "scheduler need 'evaluators.valid' for the monitored metric"
 
     if 'early_stopping' in cfg:
         assert isinstance(cfg.early_stopping, EarlyStopping), 'early_stopping must be an EarlyStopping'
+        assert 'evaluators' in cfg and 'valid' in cfg.evaluators, \
+            "early_stopping need 'evaluators.valid' for the monitored metric"
 
     if 'logging' in cfg:
         has_tb = 'tensorboard' in cfg.logging

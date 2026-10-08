@@ -11,31 +11,30 @@ class TensorBoardLogger:
         self.log_dir = os.path.join(log_dir, datetime.now().strftime('%y%m%d%H%M%S'))
         self.writer = SummaryWriter(self.log_dir)
 
-    def attach(self, trainer=None, evaluators=None):
-        evaluators = evaluators or {}
-        if trainer is not None:
-            trainer.add_event_handler(Events.ITERATION_COMPLETED, self._log_train_loss)
+    def attach(self, engine, prefix=''):
+        engine.add_event_handler(Events.ITERATION_COMPLETED, self._log_output, prefix)
+        engine.add_event_handler(Events.EPOCH_COMPLETED, self._log_result, prefix)
+        engine.add_event_handler(Events.COMPLETED, self._flush)
 
-        for name, evaluator in evaluators.items():
-            evaluator.add_event_handler(Events.EPOCH_COMPLETED, self._log_eval_metrics, name)
+    def _log_output(self, engine, prefix):
+        tag = f'{prefix}/loss' if prefix else 'loss'
 
-        closer = trainer if trainer is not None else next(iter(evaluators.values()), None)
-        if closer is not None:
-            closer.add_event_handler(Events.COMPLETED, self._close)
+        for key, value in (engine.output or {}).items():
+            if key == 'loss':
+                self.writer.add_scalar(tag, float(value), engine.state['iteration'])
 
-    def _log_train_loss(self, engine):
-        self.writer.add_scalar('training/loss', engine.output['loss'], engine.state['iteration'])
-
-    def _log_eval_metrics(self, engine, name):
-        for metric, value in engine.result.items():
+    def _log_result(self, engine, prefix):
+        for metric, value in (engine.result or {}).items():
             if metric == 'n':  # Number of samples
                 continue
 
             if hasattr(value, 'numel') and value.numel() > 1:
                 for i, v in enumerate(value):
-                    self.writer.add_scalar(f'{name}/{metric}/{i}', float(v), engine.state['epoch'])
+                    tag = f'{prefix}/{metric}/{i}'
+                    self.writer.add_scalar(tag, float(v), engine.state['epoch'])
             else:
-                self.writer.add_scalar(f'{name}/{metric}', float(value), engine.state['epoch'])
+                tag = f'{prefix}/{metric}'
+                self.writer.add_scalar(tag, float(value), engine.state['epoch'])
 
-    def _close(self, engine):
-        self.writer.close()
+    def _flush(self, engine):
+        self.writer.flush()
