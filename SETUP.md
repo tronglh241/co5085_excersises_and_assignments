@@ -4,6 +4,8 @@ How to get a working environment. For day-to-day commands, see [DEV.md](DEV.md).
 
 **Use Docker unless you cannot.** One image gives an identical environment on every machine: Python 3.12, torch 2.7.1 (cu126), Ruby/Jekyll, TeX Live and lint tools. The manual path covers **experiments only**. Previewing the site and building the report require Docker.
 
+Everything in this guide was tested on **Ubuntu 22.04**, for both the Docker and the Manual path. Other systems may work but are not tested.
+
 ## Contents
 
 - [Docker (recommended)](#docker-recommended)
@@ -15,7 +17,7 @@ How to get a working environment. For day-to-day commands, see [DEV.md](DEV.md).
 - [Manual (experiments only)](#manual-experiments-only)
   - [1. Prerequisites](#1-prerequisites-1)
   - [2. Clone the repository](#2-clone-the-repository-1)
-  - [3. Create the virtual environment](#3-create-the-virtual-environment)
+  - [3. Create the Python environment](#3-create-the-python-environment)
   - [4. Verify](#4-verify)
 - [Troubleshooting](#troubleshooting)
 
@@ -45,13 +47,13 @@ cd co5085_excersises_and_assignments
 
 ### 3. Configure `.env`
 
-Creates your local environment file. Set `UID` and `GID` to the output of `id -u` and `id -g`, so files written inside the container belong to you instead of root.
+Creates your local environment file.
 
 ```bash
 cp .env.example .env
 ```
 
-Do this once. `.env` is never committed.
+Then open `.env` and set `UID` and `GID` to the output of `id -u` and `id -g`. Do this once. `.env` is never committed.
 
 ### 4. Build the images
 
@@ -85,7 +87,7 @@ bash scripts/shell/dev.sh <gpu|cpu>
 python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 ```
 
-Expected output: `2.7.1+cu126 True` plus your GPU name. `False` is fine on the `cpu` service.
+Expected output: `2.7.1+cu126 True`. `False` is fine on the `cpu` service.
 
 You are ready. Continue with [DEV.md](DEV.md).
 
@@ -95,7 +97,7 @@ Use this only when Docker is unavailable. For the site and the report, use Docke
 
 ### 1. Prerequisites
 
-- Python 3.12 with `venv`
+- A Python environment manager such as [Miniconda](https://www.anaconda.com/docs/getting-started/miniconda/install), to create an environment with Python 3.12.
 - git
 - Optional, for GPU: NVIDIA driver 560+.
 
@@ -108,15 +110,17 @@ git clone https://github.com/tronglh241/co5085_excersises_and_assignments.git
 cd co5085_excersises_and_assignments
 ```
 
-### 3. Create the virtual environment
+### 3. Create the Python environment
 
-Creates an isolated Python environment, activates it, and installs the pinned dependencies.
+Creates an isolated environment with Python 3.12, activates it, and installs the pinned dependencies. The environment name `co5085` is just an example.
 
 ```bash
-python3.12 -m venv .venv
-source .venv/bin/activate
+conda create -n co5085 python=3.12 -y
+conda activate co5085
 pip install -r requirements.txt
 ```
+
+Any other environment manager that gives you Python 3.12 works too.
 
 ### 4. Verify
 
@@ -126,7 +130,7 @@ Checks that torch is installed and can see the GPU.
 python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
 ```
 
-Expected output: `2.7.1+cu126 True` plus your GPU name. `False` is fine on a CPU-only machine.
+Expected output: `2.7.1+cu126 True`. `False` is fine on a CPU-only machine.
 
 You are ready. Continue with [DEV.md](DEV.md).
 

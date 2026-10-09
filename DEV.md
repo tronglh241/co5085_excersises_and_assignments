@@ -115,7 +115,7 @@ bash scripts/shell/latex.sh
 
 **3.2 Build the PDF**
 
-Compiles PDF report files, which is committed to the repo.
+Compiles the reports into PDFs.
 
 ```bash
 bash scripts/report/build.sh
@@ -125,7 +125,7 @@ bash scripts/report/build.sh
 
 **4.1 Start a shell**
 
-Opens a shell in the experiment container. Skip this if you already have one open from [1.1](#1-run-experiments).
+Opens a shell in the experiment container. Skip this if you already have one open from [Run experiments](#1-run-experiments).
 
 ```bash
 bash scripts/shell/dev.sh <gpu|cpu>
@@ -145,12 +145,12 @@ Experiments and lint only. The site and report require Docker.
 
 ### 1. Run experiments
 
-**1.1 Activate the virtual environment**
+**1.1 Activate the Python environment**
 
-Uses the venv created in [SETUP.md](SETUP.md). No container shell is needed.
+Uses the environment created in [SETUP.md](SETUP.md). No container shell is needed.
 
 ```bash
-source .venv/bin/activate
+conda activate co5085
 ```
 
 **1.2 Train a model**
@@ -191,7 +191,7 @@ bash scripts/tensorboard/serve.sh
 
 **1.5 Export TensorBoard logs to CSV**
 
-Extracts the TensorBoard logs into a CSV file.
+Extracts the TensorBoard logs into a CSV file. The output `metrics.csv` is written to the same TensorBoard log directory the logs are read from.
 
 ```bash
 python scripts/tensorboard/extract.py
