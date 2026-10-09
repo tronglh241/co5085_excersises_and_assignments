@@ -71,7 +71,7 @@ bash scripts/tensorboard/serve.sh
 
 **1.5 Export TensorBoard logs to CSV**
 
-Extracts the TensorBoard logs into a CSV file.
+Extracts the TensorBoard logs into a CSV file. The output `metrics.csv` is written to the same TensorBoard log directory the logs are read from.
 
 ```bash
 python scripts/tensorboard/extract.py
