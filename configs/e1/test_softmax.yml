@@ -14,7 +14,7 @@ data:
             transforms.Normalize((0.1308,), (0.3082,)),
           ])'
       shuffle: False
-      batch_size: 64
+      batch_size: 512
 
 model:
   module: models.e1.softmax
@@ -31,13 +31,6 @@ evaluator:
     data: data.test
     model: model
     device: null
-
-loader:
-  module: common.handlers.checkpoint.loader
-  name: CheckpointLoader
-  kwargs:
-    path: null
-    modules: ["'model'"]
 
 metrics:
   loss:
@@ -76,10 +69,18 @@ logging:
     module: common.handlers.logging.tensorboard
     name: TensorBoardLogger
     kwargs:
-      log_dir: "'logs/e1/train_softmax'"
+      log_dir: "'logs/e1/test_softmax'"
   tqdm:
     module: common.handlers.logging.tqdm_logger
     name: TQDMLogger
+
+loader:
+  module: common.handlers.checkpoint.loader
+  name: CheckpointLoader
+  kwargs:
+    path: "'checkpoints/e1/softmax/261008170400/best_epoch_34_loss=0.2838.pt'"
+
+seed: 42
 
 extralibs:
   transforms: torchvision.transforms

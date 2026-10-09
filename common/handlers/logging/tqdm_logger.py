@@ -22,7 +22,9 @@ class TQDMLogger:
 
     def _train_iter(self, engine):
         self._train_bar.update(1)
-        self._train_bar.set_postfix(loss=f'{engine.output["loss"]:.4f}')
+
+        if 'loss' in engine.output:
+            self._train_bar.set_postfix(loss=f'{engine.output["loss"]:.4f}')
 
     def _train_done(self, engine):
         self._train_bar.close()
