@@ -123,6 +123,16 @@ bash scripts/report/build.sh
 
 ### 4. Lint
 
+**4.1 Start a shell**
+
+Opens a shell in the experiment container. Skip this if you already have one open from [1.1](#1-run-experiments).
+
+```bash
+bash scripts/shell/dev.sh <gpu|cpu>
+```
+
+**4.2 Run lint**
+
 Checks code style with `isort` and `flake8`. Run it after every code change.
 
 ```bash
