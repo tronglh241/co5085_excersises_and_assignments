@@ -23,7 +23,7 @@ Course reports for **CO5085 – Deep Learning and its Applications in Computer V
 
 | Item | Topic | Report | PDF |
 |------|-------|--------|-----|
-| E1 | Softmax, MLP and CNN classification | [Read the E1 post]({{ '/2026/09/28/e1-mnist-softmax-mlp-cnn.html' | relative_url }}) | *exercise.pdf (coming soon)* |
+| E1 | Softmax, MLP and CNN classification | [Read the E1 post]({{ '/2026/11/02/e1-mnist-softmax-mlp-cnn.html' | relative_url }}) | *exercise.pdf (coming soon)* |
 | E2 | Attention from scratch and tokenization | *Coming soon* | *exercise.pdf (coming soon)* |
 | E3 | LSTM and GRU sequence models | *Coming soon* | *exercise.pdf (coming soon)* |
 | A1 | CNN vs. Transformer at scale | *Coming soon* | *assignment_1.pdf (coming soon)* |
