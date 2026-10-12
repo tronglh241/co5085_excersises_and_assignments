@@ -10,7 +10,6 @@
 \setmainfont{Latin Modern Roman}
 \setsansfont{Latin Modern Sans}
 \setmonofont{Latin Modern Mono}
-\graphicspath{{../docs/assets/e1/}}
 
 \title{Báo cáo bài tập E1--E3}
 \author{TODO: tên thành viên}
@@ -23,177 +22,204 @@
 \newpage
 
 \section*{Liêm chính học thuật}
+\addcontentsline{toc}{section}{Liêm chính học thuật}
+Nhóm cam kết tuân thủ quy định về liêm chính học thuật của nhà trường. Công cụ AI chỉ được sử dụng ở mức hỗ trợ. Toàn bộ mã nguồn, thí nghiệm và số liệu trong báo cáo do nhóm thực hiện. Các thành viên hiểu và có thể giải thích đầy đủ các nội dung đã nộp.
 
-Nhóm cam kết tuân thủ quy định liêm chính học thuật của nhà trường và của môn học. Công cụ AI chỉ được dùng ở vai trò hỗ trợ. Toàn bộ mã nguồn, thực nghiệm, số liệu và phần phân tích trong báo cáo do nhóm thực hiện, hiểu rõ và có thể bảo vệ trực tiếp.
-
-% ============================================================
 \section{Giới thiệu}\label{sec:intro}
 
 \subsection{Phạm vi và mục tiêu}\label{sec:scope}
 
-Báo cáo này trình bày kết quả của ba bài tập E1--E3. Cả ba bài tập cùng giải bài toán phân loại ảnh chữ số viết tay trên tập \textbf{MNIST}, với cùng một cách chia dữ liệu, cùng tiền xử lý và cùng quy trình huấn luyện (Mục~\ref{sec:setup}). Việc dùng chung dữ liệu cho phép so sánh công bằng giữa các mô hình khác nhau.
+Báo cáo này trình bày các bài tập E1--E3 của môn học. Cả ba bài tập đều giải bài toán phân loại ảnh trên cùng một tập dữ liệu nhỏ (MNIST) với cùng cách chia dữ liệu, nhằm so sánh các họ mô hình ở điều kiện công bằng.
 
 Mục tiêu của từng bài tập như sau:
+
 \begin{itemize}
     \item \textbf{E1} (Mục~\ref{sec:e1}): xây dựng và so sánh ba bộ phân loại, gồm có Softmax, Multilayer Perceptron (MLP) và Convolutional Neural Networks (CNN).
     \item \textbf{E2} (Mục~\ref{sec:e2}): hiện thực Multi-Head Self-Attention (MSA) từ đầu, đối chiếu với bản \texttt{nn.MultiheadAttention} của PyTorch, và so sánh ít nhất hai cách tách ảnh thành token.
     \item \textbf{E3} (Mục~\ref{sec:e3}): mô hình hóa ảnh như dữ liệu chuỗi bằng Long Short-Term Memory (LSTM) và Gated Recurrent Unit (GRU), thử các cách biểu diễn chuỗi khác nhau và so sánh với baseline MLP và CNN của E1.
 \end{itemize}
 
-Mã nguồn, cấu hình và log của ba bài tập được lưu trong repository GitHub của nhóm: \url{https://github.com/tronglh241/co5085_excersises_and_assignments}.
+Toàn bộ mã nguồn, cấu hình huấn luyện được công bố trên GitHub của nhóm với hướng dẫn môi trường và lệnh chạy.
+\begin{itemize}
+    \item Repository: \url{https://github.com/tronglh241/co5085_excersises_and_assignments}
+    \item GitHub Pages: \url{https://tronglh241.github.io/co5085_excersises_and_assignments}
+\end{itemize}
+Báo cáo này cũng được đặt trong repository tại \texttt{reports/exercises.pdf}.
 
-\subsection{Cấu trúc báo cáo và ký hiệu}
-TODO: Mô tả bố cục các mục và bảng ký hiệu thống nhất ($N$, $T$, $d$, $h$, $d_k=d/h$, $B$, $C$, $\theta$),  hàm mất mát $\mathcal{L} = -\frac{1}{B}\sum_{i=1}^{B}\log p_\theta(y_i\mid x_i)$.
+\subsection{Ký hiệu}
+% TODO
+Bảng~\ref{tab:notation} liệt kê các ký hiệu dùng xuyên suốt báo cáo.
 
-% ============================================================
+\begin{table}[ht]
+    \centering
+    \caption{Ký hiệu sử dụng trong báo cáo.}
+    \label{tab:notation}
+    \begin{tabular}{ll}
+        \toprule
+        Ký hiệu                                                          & Ý nghĩa                                                  \\
+        \midrule
+        $\mathbf{x} \in \mathbb{R}^{1 \times H \times W}$                & Ảnh đầu vào ($H = W = 28$)                               \\
+        $y \in \{0, \dots, C-1\}$                                        & Nhãn lớp, $C = 10$                                       \\
+        $N$, $B$                                                         & Số mẫu của tập dữ liệu, kích thước batch                 \\
+        $\boldsymbol{\theta}$                                            & Tham số của mô hình                                      \\
+        $f_{\boldsymbol{\theta}}(\mathbf{x}) \in \mathbb{R}^{C}$         & Logit đầu ra của mô hình                                 \\
+        $\mathrm{softmax}(\mathbf{z})_k = e^{z_k} / \sum_j e^{z_j}$      & Hàm softmax                                              \\
+        $\mathcal{L}$                                                    & Hàm mất mát (cross-entropy)                              \\
+        \midrule
+        $T$                                                              & Số token (hoặc số bước thời gian)                        \\
+        $d$                                                              & Số chiều embedding của token                             \\
+        $n_h$, $d_h = d / n_h$                                           & Số head và số chiều mỗi head                             \\
+        $\mathbf{Q}, \mathbf{K}, \mathbf{V}$                             & Ma trận query, key, value                                \\
+        $\mathbf{W}^{Q}, \mathbf{W}^{K}, \mathbf{W}^{V}, \mathbf{W}^{O}$ & Các ma trận chiếu của MSA                                \\
+        \midrule
+        $\mathbf{x}_t$                                                   & Đầu vào tại bước thời gian $t$ (một hàng hoặc một patch) \\
+        $\mathbf{h}_t$, $\mathbf{c}_t$                                   & Trạng thái ẩn và trạng thái ô nhớ (LSTM) tại bước $t$    \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
 \section{Thiết lập thực nghiệm chung}\label{sec:setup}
 
+Mục này mô tả các thiết lập dùng chung cho cả ba bài tập, bao gồm: tập dữ liệu, cách chia dữ liệu, tiền xử lý, quy trình huấn luyện, độ đo và cách tái lập thí nghiệm. Các mô hình ở E1--E3 đều được huấn luyện và đánh giá trên cùng một cách chia dữ liệu, do đó kết quả giữa các bài tập có thể so sánh trực tiếp.
+
 \subsection{Tập dữ liệu}
-Tập dữ liệu được chọn, số lớp, kích thước ảnh, lý do lựa chọn (và lý do cụ thể nếu dùng
-tập ngoài MNIST/Fashion-MNIST/CIFAR-10).
+
+Tập dữ liệu mà nhóm sử dụng là tập \textbf{MNIST}, chứa các hình ảnh chữ số viết tay từ 0 đến 9. Các hình ảnh là ảnh xám có kích thước $28 \times 28$ với giá trị điểm ảnh trong khoảng $[0, 255]$. Tập dữ liệu gốc gồm tổng cộng 70\,000 ảnh, trong đó, 60\,000 ảnh thuộc tập huấn luyện và 10\,000 ảnh thuộc tập kiểm tra. Đây là một tập nhỏ, nằm trong danh sách tập dữ liệu được đề bài cho phép, phù hợp để so sánh nhiều họ mô hình với chi phí huấn luyện thấp.
+
+Hình~\ref{fig:mnist-samples} minh họa các mẫu của từng lớp được lấy ra từ tập huấn luyện của \textbf{MNIST}.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/e1_e3/samples}
+    \caption{Một số mẫu ngẫu nhiên của từng lớp trong MNIST.}
+    \label{fig:mnist-samples}
+\end{figure}
 
 \subsection{Chia tập dữ liệu}\label{sec:split}
-% Same split for E1, E2, E3 so E3 can be compared fairly against E1.
-Kích thước train/validation/test, cách tách validation và seed cố định, dùng chung cho
-cả ba bài tập.
 
-\subsection{Tiền xử lý}
-% Same preprocessing for every model.
-Chuẩn hóa, tăng cường dữ liệu (nếu có), áp dụng giống nhau cho mọi mô hình.
+Nhóm giữ nguyên tập kiểm tra chính thức của MNIST và chỉ dùng nó cho lần đánh giá cuối cùng. Tập validation được lấy ra từ 60\,000 ảnh huấn luyện gốc: 10\,000 ảnh dành cho validation, 50\,000
+ảnh còn lại dùng để huấn luyện (Bảng~\ref{tab:split}). Validation giúp theo
+dõi quá trình huấn luyện, điều chỉnh learning rate và chọn checkpoint tốt
+nhất mà không chạm vào tập test.
 
+Việc tách train/validation được thực hiện theo từng lớp (\textit{stratified}),
+nên tỷ lệ các chữ số ở hai tập này gần như trùng nhau
+(Hình~\ref{fig:class-dist}, Bảng~\ref{tab:class-dist}). Quá trình tách dùng
+seed cố định (\texttt{\todo{seed}}), vì vậy mọi lần chạy ở E1, E2 và E3 đều
+cho đúng cùng một cách chia. Nhờ đó các mô hình được so sánh trên cùng dữ
+liệu.
+
+Các lớp phân bố khá đồng đều. Chữ số 1 chiếm nhiều nhất (11{,}24\% tập train),
+chữ số 5 ít nhất (9{,}04\%), chênh lệch khoảng 1{,}24 lần. Mức lệch này nhỏ,
+nên nhóm dùng accuracy làm độ đo chính và không cần xử lý mất cân bằng lớp.
+
+\begin{table}[ht]
+    \centering
+    \caption{Cách chia dữ liệu. Tỷ lệ tính trên tổng 70\,000 ảnh.}
+    \label{tab:split}
+    \begin{tabular}{lrr}
+        \toprule
+        Tập        & Số ảnh  & Tỷ lệ    \\
+        \midrule
+        Train      & 50\,000 & 71{,}4\% \\
+        Validation & 10\,000 & 14{,}3\% \\
+        Test       & 10\,000 & 14{,}3\% \\
+        \midrule
+        Tổng       & 70\,000 & 100\%    \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[ht]
+    \centering
+    \caption{Tỷ lệ (\%) của từng chữ số trong mỗi tập. Train và validation được
+        tách phân tầng nên gần như trùng nhau; tập test là tập chính thức của MNIST.}
+    \label{tab:class-dist}
+    \small
+    \begin{tabular}{lrrrrrrrrrr}
+        \toprule
+        Tập        & 0      & 1       & 2       & 3       & 4      & 5      & 6      & 7       & 8      & 9       \\
+        \midrule
+        Train      & 9{,}87 & 11{,}24 & 9{,}93  & 10{,}22 & 9{,}74 & 9{,}04 & 9{,}86 & 10{,}44 & 9{,}75 & 9{,}91  \\
+        Validation & 9{,}87 & 11{,}24 & 9{,}93  & 10{,}22 & 9{,}74 & 9{,}03 & 9{,}86 & 10{,}44 & 9{,}75 & 9{,}92  \\
+        Test       & 9{,}80 & 11{,}35 & 10{,}32 & 10{,}10 & 9{,}82 & 8{,}92 & 9{,}58 & 10{,}28 & 9{,}74 & 10{,}09 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}
+        \begin{axis}[
+                ybar,
+                width=\linewidth, height=6cm,
+                bar width=4.5pt,
+                xtick={0,...,9},
+                xlabel={Chữ số}, ylabel={Tỷ lệ (\%)},
+                ymin=0, ymax=13,
+                enlarge x limits=0.08,
+                ymajorgrids,
+                legend style={at={(0.5,1.03)}, anchor=south, legend columns=-1},
+            ]
+            \addplot coordinates {(0,9.87) (1,11.24) (2,9.93)  (3,10.22) (4,9.74)
+                    (5,9.04) (6,9.86)  (7,10.44) (8,9.75)  (9,9.91)};
+            \addplot coordinates {(0,9.87) (1,11.24) (2,9.93)  (3,10.22) (4,9.74)
+                    (5,9.03) (6,9.86)  (7,10.44) (8,9.75)  (9,9.92)};
+            \addplot coordinates {(0,9.80) (1,11.35) (2,10.32) (3,10.10) (4,9.82)
+                    (5,8.92) (6,9.58)  (7,10.28) (8,9.74)  (9,10.09)};
+            \legend{Train, Validation, Test}
+            % đường tham chiếu 10% (phân bố đều lý tưởng)
+            \draw[dashed] (axis cs:\pgfkeysvalueof{/pgfplots/xmin},10) --
+            (axis cs:\pgfkeysvalueof{/pgfplots/xmax},10);
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Phân bố lớp của các tập train, validation và test. Đường nét đứt là
+        mức 10\% của phân bố đều.}
+    \label{fig:class-dist}
+\end{figure}
+
+\subsection{Tiền xử lý và augmentation}
 \subsection{Quy trình huấn luyện}
-% Mention the hand-written loop: forward -> loss -> backward() -> optimizer.step().
-Bộ tối ưu, learning rate, batch size, số epoch, scheduler, tiêu chí chọn mô hình
-(ví dụ validation accuracy tốt nhất). Khẳng định vòng lặp huấn luyện được tự viết bằng
-PyTorch.
-
-\subsection{Khả năng tái lập}
-% Seeds, hardware, library versions, location of logs/configs in the repo.
-Seed, phần cứng, phiên bản thư viện, vị trí cấu hình và log trong repository.
-
 \subsection{Độ đo đánh giá}
-% Same metrics everywhere so Section 6 can merge tables directly.
-Accuracy, số tham số, thời gian huấn luyện (mỗi epoch hoặc tổng); nếu có nhiều seed thì
-báo cáo trung bình $\pm$ độ lệch chuẩn.
+\subsection{Khả năng tái lập}
 
-% ============================================================
 \section{E1: Softmax, MLP và CNN}\label{sec:e1}
-
 \subsection{Mục tiêu và thiết lập}
-% 2-3 lines: goal, pointer to Sec. 2, what differs from the common setup.
-Mục tiêu bài tập, tham chiếu Mục~\ref{sec:setup} và các điểm riêng của E1.
-
 \subsection{Mô hình}
-% Table: Layer | Output shape | Params.
-Bộ phân loại softmax $\hat{y}=\mathrm{softmax}(Wx+b)$ trên vector flatten; MLP nhiều tầng
-trên vector flatten; CNN (convolution, pooling, có thể batch norm) cùng bảng cấu hình.
-
-\subsection{Kết quả}
-% Results table with the standard columns:
-% Model | Variant | Params | Time/epoch | Best val acc | Test acc.
-Bảng so sánh accuracy, số tham số, thời gian của ba mô hình, kèm một câu nhận xét.
-
-\subsection{Đường cong học}
-% Two panels: loss (left), accuracy (right); train dashed, val solid.
-Đường cong loss và accuracy của train/validation, nhận xét hiện tượng overfitting
-và tốc độ hội tụ.
-
+\subsection{Kết quả và đường cong học}
+\subsection{Ảnh hưởng của augmentation}
 \subsection{Phân tích lỗi}
-% Exercise-specific core of E1.
-Confusion matrix (chuẩn hóa theo hàng) và một số mẫu phân loại sai; giải thích các cặp
-lớp hay bị nhầm và ý nghĩa đối với inductive bias của từng mô hình.
-
 \subsection{Thảo luận và kết luận ngắn}
-% Closing Takeaway box (2-4 sentences).
-Flatten làm mất thông tin gì, convolution bổ sung điều gì, quan hệ giữa capacity và
-accuracy.
 
-% ============================================================
 \section{E2: Transformer (MSA và tokenization)}\label{sec:e2}
-
 \subsection{Mục tiêu và thiết lập}
-Mục tiêu bài tập, tham chiếu Mục~\ref{sec:setup}; nêu rõ các cách tokenization sẽ thử.
-
 \subsection{Mô hình}
-% Scratch MSA must not use nn.MultiheadAttention / nn.TransformerEncoder*.
-Công thức
-$\mathrm{Attn}(Q,K,V)=\mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right)V$ và
-$\mathrm{MSA}(X)=\mathrm{Concat}(\mathrm{head}_1,\dots,\mathrm{head}_h)W^O$, ánh xạ từng
-thành phần sang mã (Linear, einsum/matmul, tách và ghép head); bộ phân loại gồm encoder
-nông, LayerNorm, FFN, positional encoding và head phân loại; bản đối chiếu dùng
-\texttt{nn.MultiheadAttention}.
-
-\subsection{Kết quả}
-Bảng kết quả theo định dạng cột chuẩn cho mọi biến thể.
-
-\subsection{Đường cong học}
-Đường cong loss/accuracy, cùng phong cách với E1.
-
 \subsection{Kiểm tra tính đúng đắn của MSA tự viết}
-% Copy weights into nn.MultiheadAttention; report max abs difference (~1e-6).
-Sao chép trọng số sang bản PyTorch, báo cáo sai khác tuyệt đối lớn nhất trên cùng đầu vào
-và bảng unit test ngắn.
-
+\subsection{Kết quả: MSA tự viết và MSA PyTorch}
 \subsection{So sánh các cách tokenization}
-% At least two, ideally three: patch, row/pixel, CNN-stem. Attention cost O(N^2 d).
-Với mỗi cách: số token $N$, chiều token, cách mã hóa vị trí. Hai phép so sánh bắt buộc:
-(i) MSA tự viết với MSA PyTorch (cùng tokenization); (ii) giữa các tokenization về
-accuracy, thời gian, số tham số và nhận xét. Có thể bổ sung bản đồ attention và so sánh
-với CNN của E1.
-
-\subsection{Thảo luận và kết luận ngắn}
-Tóm tắt ảnh hưởng của tokenization và chi phí tính toán, 2--4 câu.
-
-% ============================================================
-\section{E3: LSTM / GRU trên chuỗi ảnh}\label{sec:e3}
-% W9 version: heading + the sentence below only.
-% "Nội dung mục này sẽ được bổ sung cho hạn nộp W10 (09/11/2026)."
-
-\subsection{Mục tiêu và thiết lập}
-Mục tiêu bài tập, tham chiếu Mục~\ref{sec:setup}, baseline MLP/CNN lấy từ E1 (cùng split).
-
-\subsection{Mô hình}
-% At least two image-to-sequence schemes, or LSTM vs GRU on the same one.
-Các cách chuyển ảnh thành chuỗi (theo hàng, theo cột, chuỗi patch), độ dài chuỗi $T$ và
-chiều đầu vào mỗi bước; cấu hình LSTM và GRU (hidden size, số tầng, một/hai chiều).
-
-\subsection{Kết quả}
-Bảng LSTM và GRU theo từng cách biểu diễn, kèm baseline MLP/CNN của E1.
-
 \subsection{Đường cong học}
-Đường cong loss/accuracy, cùng phong cách với E1 và E2.
-
-\subsection{Phân tích phụ thuộc thời gian}
-% Cheap experiments: shuffle rows at test time, truncate sequence,
-% row-scan vs column-scan; compare with CNN behavior.
-Các thí nghiệm kiểm tra khả năng bắt phụ thuộc: xáo trộn thứ tự hàng khi kiểm thử, cắt
-ngắn chuỗi, so sánh quét theo hàng và theo cột, đối chiếu với CNN.
-
 \subsection{Thảo luận và kết luận ngắn}
-Số tham số so với accuracy, thời gian huấn luyện (tính tuần tự của hồi quy), mức độ phù
-hợp của mô hình chuỗi với ảnh.
 
-% ============================================================
+\section{E3: LSTM / GRU trên chuỗi ảnh}\label{sec:e3}
+% \subsection{Mục tiêu và thiết lập}
+% \subsection{Mô hình}
+% \subsection{Kết quả}
+% \subsection{Đường cong học}
+% \subsection{Phân tích phụ thuộc thời gian}
+% \subsection{Thảo luận và kết luận ngắn}
+
 \section{So sánh tổng thể và kết luận}\label{sec:conclusion}
-% Merges the results tables of Sections 3-5.
-
 \subsection{Bảng so sánh tổng hợp}
-Một bảng duy nhất cho mọi mô hình của E1--E3 với accuracy, số tham số và thời gian.
-
 \subsection{Kết luận}
-Rút ra về inductive bias (tính cục bộ, attention toàn cục, xử lý tuần tự).
-
 \subsection{Hạn chế và hướng phát triển}
-Tập dữ liệu nhỏ, tinh chỉnh hạn chế, một lần chia dữ liệu; hướng mở rộng.
 
-% ============================================================
 \section*{Tài liệu tham khảo}
-% Short numbered list (IEEE style): only the papers/docs actually used.
+\addcontentsline{toc}{section}{Tài liệu tham khảo}
 
 \appendix
 \section{Phụ lục}\label{sec:appendix}
-% Hyperparameter tables, full configs, repo layout, library versions, seed list,
-% exact commands to reproduce (reports/exercises.pdf, E1/, E2/, E3/).
-Bảng siêu tham số, cấu hình đầy đủ, cấu trúc repository, phiên bản thư viện, danh sách
-seed và các lệnh chạy để tái lập kết quả.
+\subsection{Hyperparameters đầy đủ}
+\subsection{Cấu trúc repository và lệnh chạy}
+\subsection{Hình bổ sung}
+\subsection{Chi tiết kiểm tra MSA}
 \end{document}
