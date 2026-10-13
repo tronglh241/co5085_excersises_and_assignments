@@ -2,9 +2,12 @@
 
 \usepackage{fontspec}
 \usepackage[vietnamese,provide=*]{babel}
+\usepackage{amsmath,amssymb}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{minted}
+\usepackage[top=2.5cm, bottom=2.0cm, left=3.0cm, right=2.0cm]{geometry}
+\usepackage{setspace}\onehalfspacing
 \usepackage[hidelinks]{hyperref}
 
 \setmainfont{Latin Modern Roman}
@@ -25,11 +28,13 @@
 \addcontentsline{toc}{section}{Liêm chính học thuật}
 Nhóm cam kết tuân thủ quy định về liêm chính học thuật của nhà trường. Công cụ AI chỉ được sử dụng ở mức hỗ trợ. Toàn bộ mã nguồn, thí nghiệm và số liệu trong báo cáo do nhóm thực hiện. Các thành viên hiểu và có thể giải thích đầy đủ các nội dung đã nộp.
 
-\section{Giới thiệu}\label{sec:intro}
+\section{Giới thiệu}
+\label{sec:intro}
 
-\subsection{Phạm vi và mục tiêu}\label{sec:scope}
+\subsection{Phạm vi và mục tiêu}
+\label{sec:scope}
 
-Báo cáo này trình bày các bài tập E1--E3 của môn học. Cả ba bài tập đều giải bài toán phân loại ảnh trên cùng một tập dữ liệu nhỏ (MNIST) với cùng cách chia dữ liệu, nhằm so sánh các họ mô hình ở điều kiện công bằng.
+Báo cáo này trình bày các bài tập E1--E3 của môn học. Cả ba bài tập đều giải bài toán phân loại ảnh trên cùng tập dữ liệu MNIST (Modified National Institute of Standards and Technology)~\cite{lecun1998gradient} với cùng cách chia dữ liệu, nhằm so sánh các họ mô hình ở điều kiện công bằng.
 
 Mục tiêu của từng bài tập như sau:
 
@@ -78,112 +83,98 @@ Bảng~\ref{tab:notation} liệt kê các ký hiệu dùng xuyên suốt báo c�
     \end{tabular}
 \end{table}
 
-\section{Thiết lập thực nghiệm chung}\label{sec:setup}
+\section{Thiết lập thực nghiệm chung}
+\label{sec:setup}
 
 Mục này mô tả các thiết lập dùng chung cho cả ba bài tập, bao gồm: tập dữ liệu, cách chia dữ liệu, tiền xử lý, quy trình huấn luyện, độ đo và cách tái lập thí nghiệm. Các mô hình ở E1--E3 đều được huấn luyện và đánh giá trên cùng một cách chia dữ liệu, do đó kết quả giữa các bài tập có thể so sánh trực tiếp.
 
 \subsection{Tập dữ liệu}
+\label{sec:dataset}
 
-Tập dữ liệu mà nhóm sử dụng là tập \textbf{MNIST}, chứa các hình ảnh chữ số viết tay từ 0 đến 9. Các hình ảnh là ảnh xám có kích thước $28 \times 28$ với giá trị điểm ảnh trong khoảng $[0, 255]$. Tập dữ liệu gốc gồm tổng cộng 70\,000 ảnh, trong đó, 60\,000 ảnh thuộc tập huấn luyện và 10\,000 ảnh thuộc tập kiểm tra. Đây là một tập nhỏ, nằm trong danh sách tập dữ liệu được đề bài cho phép, phù hợp để so sánh nhiều họ mô hình với chi phí huấn luyện thấp.
+Trong các thí nghiệm của E1--E3, nhóm sử dụng tập dữ liệu MNIST, một tập dữ liệu chuẩn phổ biến dùng để đánh giá các phương pháp phân loại ảnh. MNIST gồm các ảnh chữ số viết tay từ 0 đến 9, tương ứng với 10 lớp phân loại. Mỗi ảnh là ảnh xám có kích thước $28 \times 28$ pixel.
 
-Hình~\ref{fig:mnist-samples} minh họa các mẫu của từng lớp được lấy ra từ tập huấn luyện của \textbf{MNIST}.
+Tập dữ liệu MNIST tiêu chuẩn gồm 60.000 ảnh thuộc tập huấn luyện ban đầu và 10.000 ảnh thuộc tập kiểm tra chính thức. Các ảnh được gán nhãn từ 0 đến 9. Đặc điểm của tập dữ liệu được tóm tắt trong Bảng~\ref{tab:dataset-info}.
 
-\begin{figure}[ht]
+\begin{table}[htbp]
     \centering
-    \includegraphics[width=0.8\linewidth]{images/e1_e3/samples}
+    \caption{Đặc điểm của tập dữ liệu MNIST.}
+    \label{tab:dataset-info}
+    \begin{tabular}{ll}
+        \toprule
+        Thuộc tính                           & Giá trị              \\
+        \midrule
+        Loại dữ liệu                         & Ảnh chữ số viết tay  \\
+        Số lớp                               & 10 (các chữ số 0--9) \\
+        Kích thước ảnh                       & $28 \times 28$       \\
+        Số kênh                              & 1 (ảnh xám)          \\
+        Số ảnh trong tập huấn luyện gốc      & 60.000               \\
+        Số ảnh trong tập kiểm tra chính thức & 10.000               \\
+        Giá trị nhãn                         & $\{0,1,\ldots,9\}$   \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+MNIST được lựa chọn vì tập này có quy mô nhỏ, cấu trúc dữ liệu đơn giản và phù hợp với phạm vi tính toán của các thí nghiệm. Đồng thời, tập dữ liệu này cho phép nghiên cứu cùng một bài toán phân loại ảnh bằng nhiều họ mô hình khác nhau. Trong E1, ảnh được sử dụng để huấn luyện các bộ phân loại Softmax, MLP và CNN. Trong E2, ảnh được biểu diễn thành các token để đưa vào mô hình Transformer. Trong E3, ảnh được biểu diễn thành chuỗi để đưa vào LSTM và GRU.
+
+Hình~\ref{fig:mnist-samples} minh họa các ảnh MNIST đại diện cho 10 lớp. Các ảnh trong hình được lấy ngẫu nhiên từ tập huấn luyện.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\linewidth]
+    {images/e1_e3/samples}
     \caption{Một số mẫu ngẫu nhiên của từng lớp trong MNIST.}
     \label{fig:mnist-samples}
 \end{figure}
 
-\subsection{Chia tập dữ liệu}\label{sec:split}
+\subsection{Chia tập dữ liệu}
+\label{sec:split}
 
-Nhóm giữ nguyên tập kiểm tra chính thức của MNIST và chỉ dùng nó cho lần đánh giá cuối cùng. Tập validation được lấy ra từ 60\,000 ảnh huấn luyện gốc: 10\,000 ảnh dành cho validation, 50\,000
-ảnh còn lại dùng để huấn luyện (Bảng~\ref{tab:split}). Validation giúp theo
-dõi quá trình huấn luyện, điều chỉnh learning rate và chọn checkpoint tốt
-nhất mà không chạm vào tập test.
+Để đánh giá khả năng tổng quát hóa của các mô hình và bảo đảm tính nhất quán giữa các thí nghiệm E1--E3, nhóm chia dữ liệu MNIST thành ba tập: huấn luyện (training), kiểm định (validation) và kiểm tra (test).
 
-Việc tách train/validation được thực hiện theo từng lớp (\textit{stratified}),
-nên tỷ lệ các chữ số ở hai tập này gần như trùng nhau
-(Hình~\ref{fig:class-dist}, Bảng~\ref{tab:class-dist}). Quá trình tách dùng
-seed cố định (\texttt{\todo{seed}}), vì vậy mọi lần chạy ở E1, E2 và E3 đều
-cho đúng cùng một cách chia. Nhờ đó các mô hình được so sánh trên cùng dữ
-liệu.
+Cụ thể, tập huấn luyện gốc gồm 60.000 ảnh được chia thành 50.000 ảnh dùng để cập nhật tham số mô hình và 10.000 ảnh dùng để theo dõi hiệu năng trong quá trình huấn luyện và lựa chọn mô hình. Tập kiểm tra chính thức gồm 10.000 ảnh và được giữ riêng để đánh giá cuối cùng. Bảng~\ref{tab:dataset-split} trình bày số lượng mẫu của từng tập.
 
-Các lớp phân bố khá đồng đều. Chữ số 1 chiếm nhiều nhất (11{,}24\% tập train),
-chữ số 5 ít nhất (9{,}04\%), chênh lệch khoảng 1{,}24 lần. Mức lệch này nhỏ,
-nên nhóm dùng accuracy làm độ đo chính và không cần xử lý mất cân bằng lớp.
-
-\begin{table}[ht]
+\begin{table}[htbp]
     \centering
-    \caption{Cách chia dữ liệu. Tỷ lệ tính trên tổng 70\,000 ảnh.}
-    \label{tab:split}
+    \caption{Phân chia tập dữ liệu MNIST trong các thí nghiệm.}
+    \label{tab:dataset-split}
     \begin{tabular}{lrr}
         \toprule
-        Tập        & Số ảnh  & Tỷ lệ    \\
+        Tập dữ liệu         & Số lượng ảnh & Nguồn                   \\
         \midrule
-        Train      & 50\,000 & 71{,}4\% \\
-        Validation & 10\,000 & 14{,}3\% \\
-        Test       & 10\,000 & 14{,}3\% \\
+        Training            & 50.000       & Tập huấn luyện gốc      \\
+        Validation          & 10.000       & Tập huấn luyện gốc      \\
+        Test                & 10.000       & Tập kiểm tra chính thức \\
         \midrule
-        Tổng       & 70\,000 & 100\%    \\
+        Tổng số ảnh sử dụng & 70.000       & MNIST                   \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-\begin{table}[ht]
-    \centering
-    \caption{Tỷ lệ (\%) của từng chữ số trong mỗi tập. Train và validation được
-        tách phân tầng nên gần như trùng nhau; tập test là tập chính thức của MNIST.}
-    \label{tab:class-dist}
-    \small
-    \begin{tabular}{lrrrrrrrrrr}
-        \toprule
-        Tập        & 0      & 1       & 2       & 3       & 4      & 5      & 6      & 7       & 8      & 9       \\
-        \midrule
-        Train      & 9{,}87 & 11{,}24 & 9{,}93  & 10{,}22 & 9{,}74 & 9{,}04 & 9{,}86 & 10{,}44 & 9{,}75 & 9{,}91  \\
-        Validation & 9{,}87 & 11{,}24 & 9{,}93  & 10{,}22 & 9{,}74 & 9{,}03 & 9{,}86 & 10{,}44 & 9{,}75 & 9{,}92  \\
-        Test       & 9{,}80 & 11{,}35 & 10{,}32 & 10{,}10 & 9{,}82 & 8{,}92 & 9{,}58 & 10{,}28 & 9{,}74 & 10{,}09 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
+Việc chia tập huấn luyện và validation được thực hiện bằng
+    [ĐIỀN PHƯƠNG PHÁP CHIA DỮ LIỆU], với random seed bằng
+    [ĐIỀN SEED]. Nhóm sử dụng cùng một cách chia dữ liệu cho
+tất cả các mô hình trong E1--E3 nhằm hạn chế ảnh hưởng của
+sự khác biệt giữa các mẫu dữ liệu đến kết quả so sánh.
 
-\begin{figure}[ht]
-    \centering
-    \begin{tikzpicture}
-        \begin{axis}[
-                ybar,
-                width=\linewidth, height=6cm,
-                bar width=4.5pt,
-                xtick={0,...,9},
-                xlabel={Chữ số}, ylabel={Tỷ lệ (\%)},
-                ymin=0, ymax=13,
-                enlarge x limits=0.08,
-                ymajorgrids,
-                legend style={at={(0.5,1.03)}, anchor=south, legend columns=-1},
-            ]
-            \addplot coordinates {(0,9.87) (1,11.24) (2,9.93)  (3,10.22) (4,9.74)
-                    (5,9.04) (6,9.86)  (7,10.44) (8,9.75)  (9,9.91)};
-            \addplot coordinates {(0,9.87) (1,11.24) (2,9.93)  (3,10.22) (4,9.74)
-                    (5,9.03) (6,9.86)  (7,10.44) (8,9.75)  (9,9.92)};
-            \addplot coordinates {(0,9.80) (1,11.35) (2,10.32) (3,10.10) (4,9.82)
-                    (5,8.92) (6,9.58)  (7,10.28) (8,9.74)  (9,10.09)};
-            \legend{Train, Validation, Test}
-            % đường tham chiếu 10% (phân bố đều lý tưởng)
-            \draw[dashed] (axis cs:\pgfkeysvalueof{/pgfplots/xmin},10) --
-            (axis cs:\pgfkeysvalueof{/pgfplots/xmax},10);
-        \end{axis}
-    \end{tikzpicture}
-    \caption{Phân bố lớp của các tập train, validation và test. Đường nét đứt là
-        mức 10\% của phân bố đều.}
-    \label{fig:class-dist}
-\end{figure}
+Trong quá trình huấn luyện, tập training được sử dụng để
+tính hàm mất mát và cập nhật tham số. Tập validation được
+sử dụng để theo dõi hiệu năng và [ĐIỀN TIÊU CHÍ LỰA CHỌN
+    MÔ HÌNH, NẾU CÓ]. Tập test không được sử dụng để cập nhật
+tham số hoặc lựa chọn siêu tham số; tập này chỉ được dùng
+để đánh giá mô hình sau khi hoàn tất quá trình lựa chọn.
+
+Đối với các thí nghiệm có sử dụng data augmentation,
+các phép biến đổi chỉ được áp dụng trên tập training.
+Tập validation và test được giữ theo quy trình tiền xử lý
+đánh giá thống nhất, không áp dụng augmentation ngẫu nhiên.
 
 \subsection{Tiền xử lý và augmentation}
 \subsection{Quy trình huấn luyện}
 \subsection{Độ đo đánh giá}
 \subsection{Khả năng tái lập}
 
-\section{E1: Softmax, MLP và CNN}\label{sec:e1}
+\section{E1: Softmax, MLP và CNN}
+\label{sec:e1}
 \subsection{Mục tiêu và thiết lập}
 \subsection{Mô hình}
 \subsection{Kết quả và đường cong học}
@@ -191,7 +182,8 @@ nên nhóm dùng accuracy làm độ đo chính và không cần xử lý mất 
 \subsection{Phân tích lỗi}
 \subsection{Thảo luận và kết luận ngắn}
 
-\section{E2: Transformer (MSA và tokenization)}\label{sec:e2}
+\section{E2: Transformer (MSA và tokenization)}
+\label{sec:e2}
 \subsection{Mục tiêu và thiết lập}
 \subsection{Mô hình}
 \subsection{Kiểm tra tính đúng đắn của MSA tự viết}
@@ -200,7 +192,8 @@ nên nhóm dùng accuracy làm độ đo chính và không cần xử lý mất 
 \subsection{Đường cong học}
 \subsection{Thảo luận và kết luận ngắn}
 
-\section{E3: LSTM / GRU trên chuỗi ảnh}\label{sec:e3}
+\section{E3: LSTM / GRU trên chuỗi ảnh}
+\label{sec:e3}
 % \subsection{Mục tiêu và thiết lập}
 % \subsection{Mô hình}
 % \subsection{Kết quả}
@@ -208,16 +201,19 @@ nên nhóm dùng accuracy làm độ đo chính và không cần xử lý mất 
 % \subsection{Phân tích phụ thuộc thời gian}
 % \subsection{Thảo luận và kết luận ngắn}
 
-\section{So sánh tổng thể và kết luận}\label{sec:conclusion}
+\section{So sánh tổng thể và kết luận}
+\label{sec:conclusion}
 \subsection{Bảng so sánh tổng hợp}
 \subsection{Kết luận}
 \subsection{Hạn chế và hướng phát triển}
 
-\section*{Tài liệu tham khảo}
-\addcontentsline{toc}{section}{Tài liệu tham khảo}
+\addcontentsline{toc}{section}{Tài liệu}
+\bibliographystyle{plain}
+\bibliography{references}
 
 \appendix
-\section{Phụ lục}\label{sec:appendix}
+\section{Phụ lục}
+\label{sec:appendix}
 \subsection{Hyperparameters đầy đủ}
 \subsection{Cấu trúc repository và lệnh chạy}
 \subsection{Hình bổ sung}
