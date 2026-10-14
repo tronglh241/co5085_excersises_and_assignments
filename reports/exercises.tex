@@ -14,208 +14,73 @@
 \setsansfont{Latin Modern Sans}
 \setmonofont{Latin Modern Mono}
 
-\title{Báo cáo bài tập E1--E3}
-\author{TODO: tên thành viên}
-\date{HK261}
-
 \begin{document}
-\maketitle
+\begin{titlepage}
+    \begin{center}
+        ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH \\
+        TRƯỜNG ĐẠI HỌC BÁCH KHOA \\
+        KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH
+    \end{center}
+
+    \vspace{1cm}
+
+    \begin{center}
+        \includegraphics[width=3cm]{images/logo.png}
+    \end{center}
+
+    \vspace{1cm}
+
+    \begin{center}
+        \begin{tabular}{c}
+            \multicolumn{1}{c}{\textbf{{\Large HỌC SÂU VÀ ỨNG DỤNG}}}              \\
+            \multicolumn{1}{c}{\textbf{{\Large TRONG THỊ GIÁC MÁY TÍNH (CO5085)}}} \\
+            ~~                                                                     \\
+            \hline
+            \\ \\
+            \textbf{{\huge Báo cáo Bài tập E1--E3}}                                \\
+            \\ \\
+            \hline
+        \end{tabular}
+    \end{center}
+
+    \vspace{1.5cm}
+
+    \begin{table}[h]
+        \begin{tabular}{rrll}
+            \hspace{5.5 cm} & GVHD:      & \multicolumn{2}{l}{TS.\ Lê Thanh Sách}           \\
+                            &            & \multicolumn{2}{l}{TS.\ Nguyễn Quốc }            \\
+                            & Sinh viên: & Lê Hữu Trọng                           & 2470578 \\
+                            &            & Huỳnh Văn Tâm Thiện                    & 2470094 \\
+        \end{tabular}
+    \end{table}
+
+    \vspace{1.5cm}
+
+    \begin{center}
+        {\footnotesize THÀNH PHỐ HỒ CHÍ MINH, THÁNG 10/2026}
+    \end{center}
+\end{titlepage}
 \newpage
 \tableofcontents
 \newpage
 
 \section*{Liêm chính học thuật}
 \addcontentsline{toc}{section}{Liêm chính học thuật}
-Nhóm cam kết tuân thủ quy định về liêm chính học thuật của nhà trường. Công cụ AI chỉ được sử dụng ở mức hỗ trợ. Toàn bộ mã nguồn, thí nghiệm và số liệu trong báo cáo do nhóm thực hiện. Các thành viên hiểu và có thể giải thích đầy đủ các nội dung đã nộp.
 
 \section{Giới thiệu}
-\label{sec:intro}
-
-\subsection{Phạm vi và mục tiêu}
-\label{sec:scope}
-
-Báo cáo này trình bày các bài tập E1--E3 của môn học. Cả ba bài tập đều giải bài toán phân loại ảnh trên cùng tập dữ liệu MNIST (Modified National Institute of Standards and Technology)~\cite{lecun1998gradient} với cùng cách chia dữ liệu, nhằm so sánh các họ mô hình ở điều kiện công bằng.
-
-Mục tiêu của từng bài tập như sau:
-
-\begin{itemize}
-    \item \textbf{E1} (Mục~\ref{sec:e1}): xây dựng và so sánh ba bộ phân loại, gồm có Softmax, Multilayer Perceptron (MLP) và Convolutional Neural Networks (CNN).
-    \item \textbf{E2} (Mục~\ref{sec:e2}): hiện thực Multi-Head Self-Attention (MSA) từ đầu, đối chiếu với bản \texttt{nn.MultiheadAttention} của PyTorch, và so sánh ít nhất hai cách tách ảnh thành token.
-    \item \textbf{E3} (Mục~\ref{sec:e3}): mô hình hóa ảnh như dữ liệu chuỗi bằng Long Short-Term Memory (LSTM) và Gated Recurrent Unit (GRU), thử các cách biểu diễn chuỗi khác nhau và so sánh với baseline MLP và CNN của E1.
-\end{itemize}
-
-Toàn bộ mã nguồn, cấu hình huấn luyện được công bố trên GitHub của nhóm với hướng dẫn môi trường và lệnh chạy.
-\begin{itemize}
-    \item Repository: \url{https://github.com/tronglh241/co5085_excersises_and_assignments}
-    \item GitHub Pages: \url{https://tronglh241.github.io/co5085_excersises_and_assignments}
-\end{itemize}
-Báo cáo này cũng được đặt trong repository tại \texttt{reports/exercises.pdf}.
-
-\subsection{Ký hiệu}
-% TODO
-Bảng~\ref{tab:notation} liệt kê các ký hiệu dùng xuyên suốt báo cáo.
-
-\begin{table}[ht]
-    \centering
-    \caption{Ký hiệu sử dụng trong báo cáo.}
-    \label{tab:notation}
-    \begin{tabular}{ll}
-        \toprule
-        Ký hiệu                                                          & Ý nghĩa                                                  \\
-        \midrule
-        $\mathbf{x} \in \mathbb{R}^{1 \times H \times W}$                & Ảnh đầu vào ($H = W = 28$)                               \\
-        $y \in \{0, \dots, C-1\}$                                        & Nhãn lớp, $C = 10$                                       \\
-        $N$, $B$                                                         & Số mẫu của tập dữ liệu, kích thước batch                 \\
-        $\boldsymbol{\theta}$                                            & Tham số của mô hình                                      \\
-        $f_{\boldsymbol{\theta}}(\mathbf{x}) \in \mathbb{R}^{C}$         & Logit đầu ra của mô hình                                 \\
-        $\mathrm{softmax}(\mathbf{z})_k = e^{z_k} / \sum_j e^{z_j}$      & Hàm softmax                                              \\
-        $\mathcal{L}$                                                    & Hàm mất mát (cross-entropy)                              \\
-        \midrule
-        $T$                                                              & Số token (hoặc số bước thời gian)                        \\
-        $d$                                                              & Số chiều embedding của token                             \\
-        $n_h$, $d_h = d / n_h$                                           & Số head và số chiều mỗi head                             \\
-        $\mathbf{Q}, \mathbf{K}, \mathbf{V}$                             & Ma trận query, key, value                                \\
-        $\mathbf{W}^{Q}, \mathbf{W}^{K}, \mathbf{W}^{V}, \mathbf{W}^{O}$ & Các ma trận chiếu của MSA                                \\
-        \midrule
-        $\mathbf{x}_t$                                                   & Đầu vào tại bước thời gian $t$ (một hàng hoặc một patch) \\
-        $\mathbf{h}_t$, $\mathbf{c}_t$                                   & Trạng thái ẩn và trạng thái ô nhớ (LSTM) tại bước $t$    \\
-        \bottomrule
-    \end{tabular}
-\end{table}
 
 \section{Thiết lập thực nghiệm chung}
-\label{sec:setup}
 
-Mục này mô tả các thiết lập dùng chung cho cả ba bài tập, bao gồm: tập dữ liệu, cách chia dữ liệu, tiền xử lý, quy trình huấn luyện, độ đo và cách tái lập thí nghiệm. Các mô hình ở E1--E3 đều được huấn luyện và đánh giá trên cùng một cách chia dữ liệu, do đó kết quả giữa các bài tập có thể so sánh trực tiếp.
+\section{E1 Phân loại ảnh: Softmax, MLP, CNN}
 
-\subsection{Tập dữ liệu}
-\label{sec:dataset}
+\section{E2 Transformer: MSA và tokenization}
 
-Trong các thí nghiệm của E1--E3, nhóm sử dụng tập dữ liệu MNIST, một tập dữ liệu chuẩn phổ biến dùng để đánh giá các phương pháp phân loại ảnh. MNIST gồm các ảnh chữ số viết tay từ 0 đến 9, tương ứng với 10 lớp phân loại. Mỗi ảnh là ảnh xám có kích thước $28 \times 28$ pixel.
+\section{E3 LSTM và GRU trên chuỗi ảnh}
 
-Tập dữ liệu MNIST tiêu chuẩn gồm 60.000 ảnh thuộc tập huấn luyện ban đầu và 10.000 ảnh thuộc tập kiểm tra chính thức. Các ảnh được gán nhãn từ 0 đến 9. Đặc điểm của tập dữ liệu được tóm tắt trong Bảng~\ref{tab:dataset-info}.
-
-\begin{table}[htbp]
-    \centering
-    \caption{Đặc điểm của tập dữ liệu MNIST.}
-    \label{tab:dataset-info}
-    \begin{tabular}{ll}
-        \toprule
-        Thuộc tính                           & Giá trị              \\
-        \midrule
-        Loại dữ liệu                         & Ảnh chữ số viết tay  \\
-        Số lớp                               & 10 (các chữ số 0--9) \\
-        Kích thước ảnh                       & $28 \times 28$       \\
-        Số kênh                              & 1 (ảnh xám)          \\
-        Số ảnh trong tập huấn luyện gốc      & 60.000               \\
-        Số ảnh trong tập kiểm tra chính thức & 10.000               \\
-        Giá trị nhãn                         & $\{0,1,\ldots,9\}$   \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-MNIST được lựa chọn vì tập này có quy mô nhỏ, cấu trúc dữ liệu đơn giản và phù hợp với phạm vi tính toán của các thí nghiệm. Đồng thời, tập dữ liệu này cho phép nghiên cứu cùng một bài toán phân loại ảnh bằng nhiều họ mô hình khác nhau. Trong E1, ảnh được sử dụng để huấn luyện các bộ phân loại Softmax, MLP và CNN. Trong E2, ảnh được biểu diễn thành các token để đưa vào mô hình Transformer. Trong E3, ảnh được biểu diễn thành chuỗi để đưa vào LSTM và GRU.
-
-Hình~\ref{fig:mnist-samples} minh họa các ảnh MNIST đại diện cho 10 lớp. Các ảnh trong hình được lấy ngẫu nhiên từ tập huấn luyện.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.85\linewidth]
-    {images/e1_e3/samples}
-    \caption{Một số mẫu ngẫu nhiên của từng lớp trong MNIST.}
-    \label{fig:mnist-samples}
-\end{figure}
-
-\subsection{Chia tập dữ liệu}
-\label{sec:split}
-
-Để đánh giá khả năng tổng quát hóa của các mô hình và bảo đảm tính nhất quán giữa các thí nghiệm E1--E3, nhóm chia dữ liệu MNIST thành ba tập: huấn luyện (training), kiểm định (validation) và kiểm tra (test).
-
-Cụ thể, tập huấn luyện gốc gồm 60.000 ảnh được chia thành 50.000 ảnh dùng để cập nhật tham số mô hình và 10.000 ảnh dùng để theo dõi hiệu năng trong quá trình huấn luyện và lựa chọn mô hình. Tập kiểm tra chính thức gồm 10.000 ảnh và được giữ riêng để đánh giá cuối cùng. Bảng~\ref{tab:dataset-split} trình bày số lượng mẫu của từng tập.
-
-\begin{table}[htbp]
-    \centering
-    \caption{Phân chia tập dữ liệu MNIST trong các thí nghiệm.}
-    \label{tab:dataset-split}
-    \begin{tabular}{lrr}
-        \toprule
-        Tập dữ liệu         & Số lượng ảnh & Nguồn                   \\
-        \midrule
-        Training            & 50.000       & Tập huấn luyện gốc      \\
-        Validation          & 10.000       & Tập huấn luyện gốc      \\
-        Test                & 10.000       & Tập kiểm tra chính thức \\
-        \midrule
-        Tổng số ảnh sử dụng & 70.000       & MNIST                   \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-Việc chia tập huấn luyện và validation được thực hiện bằng
-    [ĐIỀN PHƯƠNG PHÁP CHIA DỮ LIỆU], với random seed bằng
-    [ĐIỀN SEED]. Nhóm sử dụng cùng một cách chia dữ liệu cho
-tất cả các mô hình trong E1--E3 nhằm hạn chế ảnh hưởng của
-sự khác biệt giữa các mẫu dữ liệu đến kết quả so sánh.
-
-Trong quá trình huấn luyện, tập training được sử dụng để
-tính hàm mất mát và cập nhật tham số. Tập validation được
-sử dụng để theo dõi hiệu năng và [ĐIỀN TIÊU CHÍ LỰA CHỌN
-    MÔ HÌNH, NẾU CÓ]. Tập test không được sử dụng để cập nhật
-tham số hoặc lựa chọn siêu tham số; tập này chỉ được dùng
-để đánh giá mô hình sau khi hoàn tất quá trình lựa chọn.
-
-Đối với các thí nghiệm có sử dụng data augmentation,
-các phép biến đổi chỉ được áp dụng trên tập training.
-Tập validation và test được giữ theo quy trình tiền xử lý
-đánh giá thống nhất, không áp dụng augmentation ngẫu nhiên.
-
-\subsection{Tiền xử lý và augmentation}
-\subsection{Quy trình huấn luyện}
-\subsection{Độ đo đánh giá}
-\subsection{Khả năng tái lập}
-
-\section{E1: Softmax, MLP và CNN}
-\label{sec:e1}
-\subsection{Mục tiêu và thiết lập}
-\subsection{Mô hình}
-\subsection{Kết quả và đường cong học}
-\subsection{Ảnh hưởng của augmentation}
-\subsection{Phân tích lỗi}
-\subsection{Thảo luận và kết luận ngắn}
-
-\section{E2: Transformer (MSA và tokenization)}
-\label{sec:e2}
-\subsection{Mục tiêu và thiết lập}
-\subsection{Mô hình}
-\subsection{Kiểm tra tính đúng đắn của MSA tự viết}
-\subsection{Kết quả: MSA tự viết và MSA PyTorch}
-\subsection{So sánh các cách tokenization}
-\subsection{Đường cong học}
-\subsection{Thảo luận và kết luận ngắn}
-
-\section{E3: LSTM / GRU trên chuỗi ảnh}
-\label{sec:e3}
-% \subsection{Mục tiêu và thiết lập}
-% \subsection{Mô hình}
-% \subsection{Kết quả}
-% \subsection{Đường cong học}
-% \subsection{Phân tích phụ thuộc thời gian}
-% \subsection{Thảo luận và kết luận ngắn}
-
-\section{So sánh tổng thể và kết luận}
-\label{sec:conclusion}
-\subsection{Bảng so sánh tổng hợp}
-\subsection{Kết luận}
-\subsection{Hạn chế và hướng phát triển}
+\section{Kết luận}
 
 \addcontentsline{toc}{section}{Tài liệu}
 \bibliographystyle{plain}
 \bibliography{references}
 
-\appendix
-\section{Phụ lục}
-\label{sec:appendix}
-\subsection{Hyperparameters đầy đủ}
-\subsection{Cấu trúc repository và lệnh chạy}
-\subsection{Hình bổ sung}
-\subsection{Chi tiết kiểm tra MSA}
 \end{document}

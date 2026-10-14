@@ -11,3 +11,7 @@ if ! command -v gdown >/dev/null 2>&1; then
 fi
 
 gdown --folder "$folder_id"
+
+mv artifacts/checkpoints checkpoints
+mv artifacts/logs logs
+rm -r artifacts
